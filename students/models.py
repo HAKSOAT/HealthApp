@@ -1,11 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 
-from students.utils.id import LENGTH_OF_ID, generate_id
+from students.utils.generate import LENGTH_OF_ID, generate_id
 from students.utils.enums import BloodTypes, GenoTypes, StudentLevels, Departments, Colleges
 
 
 class Student(AbstractBaseUser):
+    USERNAME_FIELD = 'matric_number'
+
     id = models.CharField(max_length=LENGTH_OF_ID, primary_key=True, default=generate_id, editable=False)
     first_name = models.CharField(max_length=100, null=False, blank=False)
     last_name = models.CharField(max_length=100, null=False, blank=False)
@@ -24,4 +26,4 @@ class Student(AbstractBaseUser):
     level = models.CharField(max_length=15,
                              choices=[(student_level, student_level.value) for student_level in StudentLevels],
                              null=True)
-    is_active = models.BooleanField(default=False)
+    is_confirmed = models.BooleanField(default=False)

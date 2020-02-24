@@ -2,7 +2,7 @@
 
 from django.db import migrations, models
 import students.utils.enums
-import students.utils.id
+import students.utils.generate
 
 
 class Migration(migrations.Migration):
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             name='Student',
             fields=[
                 ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
-                ('id', models.CharField(default=students.utils.id.generate_id, editable=False, max_length=12, primary_key=True, serialize=False)),
+                ('id', models.CharField(default=students.utils.generate.generate_id, editable=False, max_length=12, primary_key=True, serialize=False)),
                 ('first_name', models.CharField(max_length=100)),
                 ('last_name', models.CharField(max_length=100)),
                 ('password', models.CharField(max_length=100)),
