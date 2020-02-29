@@ -1,7 +1,8 @@
 import os
 
 import jwt
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets
+from rest_framework.views import APIView
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.core.mail import send_mail
 
@@ -13,7 +14,7 @@ from students.serializer import (
 )
 from utils.helpers import format_response, save_in_redis, get_from_redis
 from students.utils.generate import generate_otp
-from students.models import Student
+from students.models import Student, BlackListedToken
 
 
 class RegisterStudentViewset(viewsets.ViewSet):
@@ -96,7 +97,6 @@ class LoginStudentViewset(viewsets.ViewSet):
             return format_response(error=serializer.errors.get('errors', serializer.errors),
                                    status=HTTP_400_BAD_REQUEST)
 
-        print(serializer.__dict__)
         token = jwt.encode({
             'uid': serializer.validated_data['user_id'],
             'iat': settings.JWT_SETTINGS['ISS_AT'](),
@@ -105,3 +105,23 @@ class LoginStudentViewset(viewsets.ViewSet):
 
         return format_response(token=token,
                                message='Successfully logged in')
+
+
+class LogoutStudentView(APIView):
+    """ Viewset for student log out """
+    permission_classes = ()
+
+    def post(self, request):
+        user = request.user
+        token = request.headers["authorization"].split()[1]
+        auth_data = {
+            'student': user,
+            'token': token
+        }
+        listed_token = BlackListedToken.objects.filter(**auth_data).first()
+        if listed_token:
+            return format_response(error='Student is already logged out',
+                                   status=HTTP_400_BAD_REQUEST)
+
+        BlackListedToken(**auth_data).save()
+        return format_response(message='Successfully logged out')
