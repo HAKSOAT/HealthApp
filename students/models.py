@@ -27,3 +27,13 @@ class Student(AbstractBaseUser):
                              choices=[(student_level, student_level.value) for student_level in StudentLevels],
                              null=True)
     is_confirmed = models.BooleanField(default=False)
+
+
+class BlackListedToken(models.Model):
+    id = models.CharField(
+        max_length=LENGTH_OF_ID, primary_key=True, default=generate_id,
+        editable=False
+    )
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    token = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)

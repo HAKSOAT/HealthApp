@@ -1,6 +1,10 @@
 from rest_framework import serializers
+from django.contrib.auth.hashers import check_password
 
 from students.models import Student
+from students.utils.generate import LENGTH_OF_OTP
+from students.utils.helpers import get_student_fields
+from utils.helpers import get_from_redis
 
 
 class RegisterStudentSerializer(serializers.Serializer):
@@ -50,8 +54,78 @@ class RegisterStudentSerializer(serializers.Serializer):
         return mobile_number
 
     def create(self, data):
-        student = Student(**data)
+        student_data = data.copy()
+        allowed_student_fields = set(get_student_fields())
+        passed_student_fields = set(data.keys())
+        invalid_fields = passed_student_fields - allowed_student_fields
+        for field in invalid_fields:
+            student_data[field].pop()
+        student = Student(**student_data)
+        student.email = student_data['email'].lower()
+        student.set_password(data['password'])
         student.save()
         return student
 
 
+class ConfirmStudentSerializer(serializers.Serializer):
+    otp = serializers.CharField(min_length=LENGTH_OF_OTP, allow_null=False, required=True)
+    email = serializers.EmailField(required=True, allow_null=False, min_length=5)
+    new_otp = serializers.BooleanField(default=False)
+
+    def validate(self, data):
+        self.email = data.get('email')
+        student = Student.objects.filter(email=self.email.lower()).first()
+        if not student:
+            raise serializers.ValidationError(
+                'Student does not have an account'
+            )
+
+        if student.is_confirmed:
+            raise serializers.ValidationError(
+                'Student\'s account is already confirmed'
+            )
+
+        self.new_otp = data.get('new_otp')
+        if not self.new_otp:
+            self.otp = data.get('otp')
+            otp = get_from_redis(f'OTP: {self.email}')
+            if self.otp != otp:
+                raise serializers.ValidationError(
+                    'OTP code is invalid or expired'
+                )
+
+        return data
+
+    def update(self, student, *args):
+        student.is_confirmed = True
+        student.save()
+        return student
+
+
+class LoginStudentSerializer(serializers.Serializer):
+    user = serializers.CharField(allow_null=False, required=True)
+    password = serializers.CharField(allow_null=False, required=True)
+
+    def validate(self, data):
+        self.user = data.get('user')
+        student = Student.objects.filter(matric_number=self.user).first() or\
+                  Student.objects.filter(email=self.user.lower()).first()
+        if not student:
+            raise serializers.ValidationError(
+                'Account does not exist'
+            )
+
+        if not student.is_confirmed:
+            raise serializers.ValidationError(
+                'Account is not confirmed'
+            )
+
+        self.password = data.get('password')
+        password_valid = check_password(self.password, student.password)
+        if not password_valid:
+            raise serializers.ValidationError(
+                'Wrong password'
+            )
+
+        data['user_id'] = student.id
+        return data
