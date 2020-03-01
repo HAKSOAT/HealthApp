@@ -7,6 +7,8 @@ from unittest.mock import patch
 class TestAccountRegistration():
     url = '/api/v1/register'
 
-    def test_register(self, client, new_user_data):
+    @patch('students.views.send_mail')
+    def test_register(self, mock_send_mail, client, new_user_data):
+        mock_send_mail.return_value = True
         response = client.post(self.url, data=new_user_data, format='json')
         assert response.status_code == 200

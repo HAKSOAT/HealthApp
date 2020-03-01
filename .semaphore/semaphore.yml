@@ -14,12 +14,38 @@ blocks:
               values:
                 - '3.7'
           commands:
-            - sem-version python $PYTHON_VERSION
-            - checkout
-            - python -m pip install --upgrade pip
-            - pip install -r requirements.txt
             - pip install flake8
             - 'flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics'
             - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
             - pip install pytest
             - pytest
+      env_vars:
+        - name: SECRET_KEY
+          value: '!2njcg@_pgsd9$tq%zj2-l*0*5kp^e_nzcw)8yy&#e$jfjyb6g'
+        - name: DJANGO_SETTINGS_MODULE
+          value: config.settings
+        - name: DB_NAME
+          value: healthapp
+        - name: DB_USERNAME
+          value: postgres
+        - name: DB_HOST
+          value: localhost
+        - name: DB_PORT
+          value: '5432'
+        - name: DB_PASSWORD
+          value: semaphoredb
+        - name: REDIS_CONNECTION_URL
+          value: 'redis://127.0.0.1:6379/1'
+        - name: FOO_9
+          value: BAR_9
+      prologue:
+        commands:
+          - sem-version python $PYTHON_VERSION
+          - checkout
+          - python -m pip install --upgrade pip
+          - pip install pipenv
+          - pipenv install
+          - sem-service start redis
+          - 'sem-service start postgres '
+          - sudo -u postgres psql -c 'create database healthapp;'
+          - make migrate
