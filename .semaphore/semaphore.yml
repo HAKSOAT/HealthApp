@@ -49,3 +49,6 @@ blocks:
           - 'sem-service start postgres '
           - sudo -u postgres psql -c 'create database healthapp;'
           - make migrate
+promotions:
+  - name: Deploy to Heroku
+    pipeline_file: heroku.yml
