@@ -99,7 +99,7 @@ class LoginStudentView(APIView):
                                    status=HTTP_400_BAD_REQUEST)
 
         token = jwt.encode({
-            'uid': serializer.validated_data['user_id'],
+            'uid': serializer.validated_data['student_id'],
             'iat': settings.JWT_SETTINGS['ISS_AT'](),
             'exp': settings.JWT_SETTINGS['EXP_AT']()
         }, settings.SECRET_KEY)
@@ -138,9 +138,15 @@ class StudentView(APIView):
                                message='Retrieved student details')
 
     def patch(self, request):
+        data = request.data
         student = request.user
-        serializer = StudentSerializer()
-        validated_data = serializer.validate(student, request.data)
-        serializer.update(student, validated_data)
+        serializer = StudentSerializer(student, data=data,
+                                       partial=True, context={'id': student.id})
+
+        if not serializer.is_valid():
+            return format_response(error=serializer.errors.get('errors', serializer.errors),
+                                   status=HTTP_400_BAD_REQUEST)
+
+        serializer.save()
         return format_response(message='Successfully updated student')
 

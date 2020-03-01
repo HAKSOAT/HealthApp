@@ -1,5 +1,4 @@
 import pytest
-from mixer.backend.django import mixer
 
 from students.models import Student
 
@@ -8,7 +7,10 @@ from students.models import Student
 def new_user_data():
     new_user = {
         'email': 'test@test.com',
-        'matric_number': '20001000'
+        'matric_number': '20001000',
+        'first_name': 'HAKS',
+        'last_name': 'HAKS',
+        'mobile_number': '09012212244',
+        'password': 'money'
     }
-    mixed_user_data = mixer.blend(Student, **new_user)
-    return mixed_user_data
+    return new_user
