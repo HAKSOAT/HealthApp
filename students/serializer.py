@@ -3,7 +3,7 @@ from django.contrib.auth.hashers import check_password
 
 from students.models import Student
 from students.utils.generate import LENGTH_OF_OTP
-from students.utils.helpers import get_student_fields
+from students.utils.helpers import get_student_fields, update_student, check_choices
 from utils.helpers import get_from_redis
 
 
@@ -24,6 +24,8 @@ class RegisterStudentSerializer(serializers.Serializer):
         self.email = data.get('email')
         self.mobile_number = data.get('mobile_number')
         self.password = data.get('password')
+        check_choices(data.get('blood_type'), data.get('genotype'),
+                      data.get('level'), data.get('department'), data.get('college'))
         return data
 
     def validate_email(self, email):
@@ -54,14 +56,13 @@ class RegisterStudentSerializer(serializers.Serializer):
         return mobile_number
 
     def create(self, data):
-        student_data = data.copy()
         allowed_student_fields = set(get_student_fields())
         passed_student_fields = set(data.keys())
         invalid_fields = passed_student_fields - allowed_student_fields
         for field in invalid_fields:
-            student_data[field].pop()
-        student = Student(**student_data)
-        student.email = student_data['email'].lower()
+            data.pop(field)
+        student = Student(**data)
+        student.email = data['email'].lower()
         student.set_password(data['password'])
         student.save()
         return student
@@ -129,3 +130,35 @@ class LoginStudentSerializer(serializers.Serializer):
 
         data['user_id'] = student.id
         return data
+
+
+class StudentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
+        student_fields = get_student_fields()
+        student_fields.remove('password')
+        fields = student_fields
+
+    def validate(self, student, data):
+        data = update_student(student, data)
+        if data.get('errors', None):
+            raise serializers.ValidationError(data)
+        return data
+
+    def update(self, student, validated_data):
+        allowed_student_fields = set(get_student_fields(new='new_password'))
+        passed_student_fields = set(validated_data.keys())
+        invalid_fields = passed_student_fields - allowed_student_fields
+
+        for field in invalid_fields:
+            validated_data.pop(field)
+
+        Student.objects.update_or_create(
+            id=student.id,
+            defaults=validated_data
+        )
+
+        if validated_data.get('new_password'):
+            student.set_password(validated_data['new_password'])
+            student.save()
+        return validated_data

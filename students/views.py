@@ -10,7 +10,8 @@ from config import settings
 from students.serializer import (
     RegisterStudentSerializer,
     ConfirmStudentSerializer,
-    LoginStudentSerializer
+    LoginStudentSerializer,
+    StudentSerializer
 )
 from utils.helpers import format_response, save_in_redis, get_from_redis
 from students.utils.generate import generate_otp
@@ -85,12 +86,12 @@ class ConfirmStudentViewset(viewsets.ViewSet):
         return format_response(message='Successfully confirmed student')
 
 
-class LoginStudentViewset(viewsets.ViewSet):
+class LoginStudentView(APIView):
     """ Viewset for student logging in """
     permission_classes = ()
     authentication_classes = ()
 
-    def create(self, request):
+    def post(self, request):
         data = request.data
         serializer = LoginStudentSerializer(data=data)
         if not serializer.is_valid():
@@ -108,7 +109,7 @@ class LoginStudentViewset(viewsets.ViewSet):
 
 
 class LogoutStudentView(APIView):
-    """ Viewset for student log out """
+    """ View for student log out """
     permission_classes = ()
 
     def post(self, request):
@@ -125,3 +126,21 @@ class LogoutStudentView(APIView):
 
         BlackListedToken(**auth_data).save()
         return format_response(message='Successfully logged out')
+
+
+class StudentView(APIView):
+    """ View for student's information """
+
+    def get(self, request):
+        student = request.user
+        serialized_data = StudentSerializer(student)
+        return format_response(data=serialized_data.data,
+                               message='Retrieved student details')
+
+    def patch(self, request):
+        student = request.user
+        serializer = StudentSerializer()
+        validated_data = serializer.validate(student, request.data)
+        serializer.update(student, validated_data)
+        return format_response(message='Successfully updated student')
+
