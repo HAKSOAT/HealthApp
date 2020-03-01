@@ -12,9 +12,6 @@ blocks:
           matrix:
             - env_vars: PYTHON_VERSION
               values:
-                - '2.7'
-                - '3.5'
-                - '3.6'
                 - '3.7'
           commands:
             - sem-version python $PYTHON_VERSION
@@ -26,6 +23,3 @@ blocks:
             - flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
             - pip install pytest
             - pytest
-      env_vars:
-        - name: DJANGO_SETTINGS_MODULE
-          value: config.settings
