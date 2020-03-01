@@ -5,6 +5,7 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.core.mail import send_mail
+from drf_yasg.utils import swagger_auto_schema
 
 from config import settings
 from students.serializer import (
@@ -50,6 +51,7 @@ class ConfirmStudentViewset(viewsets.ViewSet):
     permission_classes = ()
     authentication_classes = ()
 
+    @swagger_auto_schema(request_body=ConfirmStudentSerializer)
     def partial_update(self, request, pk):
         data = request.data
         student = Student.objects.filter(matric_number=pk).first()
@@ -91,6 +93,7 @@ class LoginStudentView(APIView):
     permission_classes = ()
     authentication_classes = ()
 
+    @swagger_auto_schema(request_body=LoginStudentSerializer)
     def post(self, request):
         data = request.data
         serializer = LoginStudentSerializer(data=data)
@@ -149,4 +152,3 @@ class StudentView(APIView):
 
         serializer.save()
         return format_response(message='Successfully updated student')
-

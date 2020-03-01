@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'students.apps.StudentsConfig',
+    'drf_yasg'
 ]
 
 MIDDLEWARE = [
@@ -174,6 +175,9 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES,
     'DEFAULT_PERMISSION_CLASSES': (
         'students.permissions.IsTokenBlackListed',
+    ),
+    'DEFAULT_SCHEMA_CLASS': (
+        'rest_framework.schemas.coreapi.AutoSchema'
     ),
     'DATETIME_FORMAT': "%Y-%m-%dT%H:%M:%S.%fZ",
     'DATETIME_INPUT_FORMATS': ['%Y-%m-%d %H:%M:%S', ]

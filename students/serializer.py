@@ -106,7 +106,7 @@ class LoginStudentSerializer(serializers.Serializer):
 
         if not student.is_confirmed:
             raise serializers.ValidationError(
-                'Account is not confirmed'
+                'Account is not yet confirmed'
             )
 
         password_valid = check_password(data.get('password'), student.password)
