@@ -12,7 +12,8 @@ from students.serializer import (
     RegisterStudentSerializer,
     ConfirmStudentSerializer,
     LoginStudentSerializer,
-    StudentSerializer
+    StudentSerializer,
+    ResetPasswordSerializer
 )
 from utils.helpers import format_response, save_in_redis, get_from_redis
 from students.utils.generate import generate_otp
@@ -24,6 +25,7 @@ class RegisterStudentViewset(viewsets.ViewSet):
     permission_classes = ()
     authentication_classes = ()
 
+    @swagger_auto_schema(query_serializer=RegisterStudentSerializer)
     def create(self, request):
         data = request.data
         serializer = RegisterStudentSerializer(data=data)
@@ -51,7 +53,11 @@ class ConfirmStudentViewset(viewsets.ViewSet):
     permission_classes = ()
     authentication_classes = ()
 
-    @swagger_auto_schema(request_body=ConfirmStudentSerializer)
+    @swagger_auto_schema(query_serializer=ConfirmStudentSerializer,
+                         operation_description='Confirms a student\'s account. To request OTP, '
+                                               'the otp field is not needed. However, it is '
+                                               'needed to provide OTP for account confirmation.'
+                         )
     def partial_update(self, request, pk):
         data = request.data
         student = Student.objects.filter(matric_number=pk).first()
@@ -59,30 +65,31 @@ class ConfirmStudentViewset(viewsets.ViewSet):
             return format_response(error='Student does not have an account',
                                    status=HTTP_400_BAD_REQUEST)
 
-        serializer = ConfirmStudentSerializer(student, data=data)
+        if student.is_confirmed:
+            return format_response(error='Student\'s account is already confirmed',
+                                   status=HTTP_400_BAD_REQUEST)
+
+        context = {'email': student.email}
+        serializer = ConfirmStudentSerializer(student, data=data, context=context)
         if not serializer.is_valid():
             return format_response(error=serializer.errors.get('errors', serializer.errors),
                                    status=HTTP_400_BAD_REQUEST)
 
-        if student.email != data['email']:
-            return format_response(error='Student\'s matric number and email do not match',
-                                   status=HTTP_400_BAD_REQUEST)
-
-        if data.get('new_otp', None):
-            otp = get_from_redis(f'OTP: {data["email"]}')
+        if not data.get('otp', None):
+            otp = get_from_redis(f'CONFIRM: {student.email}')
             if otp:
-                return format_response(error='OTP already generated. Check email.',
+                return format_response(error='OTP already generated. Check email and specify otp key with its value',
                                        status=HTTP_400_BAD_REQUEST)
             otp = generate_otp()
-            save_in_redis(f'OTP: {data["email"]}', otp, 60 * 5)
+            save_in_redis(f'CONFIRM: {student.email}', otp, 60 * 5)
             send_mail(
                 'Confirm HealthApp Account',
                 'The OTP code is {}.\n Valid for 5 minutes.'.format(otp),
                 os.getenv('HOST_EMAIL'),
-                [data['email']],
+                [student.email],
                 fail_silently=False
             )
-            return format_response(message='Successfully generated new OTP')
+            return format_response(message='Successfully generated Account Confirmation OTP')
 
         serializer.save()
         return format_response(message='Successfully confirmed student')
@@ -93,7 +100,10 @@ class LoginStudentView(APIView):
     permission_classes = ()
     authentication_classes = ()
 
-    @swagger_auto_schema(request_body=LoginStudentSerializer)
+    @swagger_auto_schema(query_serializer=LoginStudentSerializer,
+                         operation_description='Logs in a student. '
+                                               'Matric number or email are valid'
+                         )
     def post(self, request):
         data = request.data
         serializer = LoginStudentSerializer(data=data)
@@ -140,6 +150,9 @@ class StudentView(APIView):
         return format_response(data=serialized_data.data,
                                message='Retrieved student details')
 
+    @swagger_auto_schema(query_serializer=StudentSerializer,
+                         operation_description='Update student\'s values. To update password, '
+                                               'ensure the new_password field is filled.')
     def patch(self, request):
         data = request.data
         student = request.user
@@ -152,3 +165,46 @@ class StudentView(APIView):
 
         serializer.save()
         return format_response(message='Successfully updated student')
+
+
+class ResetPasswordViewset(viewsets.ViewSet):
+    """ View for resetting password """
+    permission_classes = ()
+    authentication_classes = ()
+
+    def partial_update(self, request, pk):
+        data = request.data
+        student = Student.objects.filter(matric_number=pk).first()
+        if not student:
+            return format_response(error='Student does not have an account',
+                                   status=HTTP_400_BAD_REQUEST)
+
+        if not student.is_confirmed:
+            return format_response(error='Account is yet to be confirmed',
+                                   status=HTTP_400_BAD_REQUEST)
+
+        context = {'email': student.email}
+        serializer = ResetPasswordSerializer(student, data=data, context=context)
+        if not serializer.is_valid():
+            return format_response(error=serializer.errors.get('errors', serializer.errors),
+                                   status=HTTP_400_BAD_REQUEST)
+
+        if not data.get('otp', None):
+            otp = get_from_redis(f'RESET: {student.email}')
+            if otp:
+                return format_response(error='OTP already generated. Check email and specify otp key with its value',
+                                       status=HTTP_400_BAD_REQUEST)
+            otp = generate_otp()
+            save_in_redis(f'RESET: {student.email}', otp, 60 * 5)
+            send_mail(
+                'Reset HealthApp Password',
+                'The OTP code is {}.\n Valid for 5 minutes.'.format(otp),
+                os.getenv('HOST_EMAIL'),
+                [student.email],
+                fail_silently=False
+            )
+            return format_response(message='Successfully generated Password Reset OTP')
+
+        serializer.save()
+        return format_response(message='Successfully reset password')
+
