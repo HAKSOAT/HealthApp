@@ -11,6 +11,9 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from datetime import timedelta
+
+from django.utils import timezone
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -40,7 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework'
+    'rest_framework',
+    'students.apps.StudentsConfig',
+    'drf_yasg'
 ]
 
 MIDDLEWARE = [
@@ -127,3 +132,53 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# Redis setting
+REDIS_CONNECTION_URL = os.getenv("REDIS_CONNECTION_URL")
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_CONNECTION_URL,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# Email settings
+EMAIL_USE_SSL = True
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+
+# JWT settings
+JWT_SETTINGS = {
+    'ISS_AT': lambda: timezone.now(),
+    'EXP_AT': lambda: timezone.now() + timedelta(days=2)
+}
+
+DEFAULT_RENDERER_CLASSES = (
+    'rest_framework.renderers.JSONRenderer',
+)
+
+if DEBUG:
+    DEFAULT_RENDERER_CLASSES = DEFAULT_RENDERER_CLASSES + (
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    )
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'students.authentication.JSONWebTokenAuthentication',
+    ),
+    'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES,
+    'DEFAULT_PERMISSION_CLASSES': (
+        'students.permissions.IsTokenBlackListed',
+    ),
+    'DEFAULT_SCHEMA_CLASS': (
+        'rest_framework.schemas.coreapi.AutoSchema'
+    ),
+    'DATETIME_FORMAT': "%Y-%m-%dT%H:%M:%S.%fZ",
+    'DATETIME_INPUT_FORMATS': ['%Y-%m-%d %H:%M:%S', ]
+}

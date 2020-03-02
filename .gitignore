@@ -3,9 +3,14 @@
 
 # Virtual Environment
 env/
+venv/
 
 # Editor files
 .idea/
+
+# Coverage files
+.coverage
+htmlcov/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
