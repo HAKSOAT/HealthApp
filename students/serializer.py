@@ -5,7 +5,7 @@ from students.models import Student
 from students.utils.generate import LENGTH_OF_OTP
 from students.utils.helpers import get_student_fields, check_password_change
 from utils.helpers import get_from_redis
-from students.utils.enums import BloodTypes, GenoTypes, StudentLevels, Departments, Colleges
+from students.utils.enums import BloodGroups, GenoTypes, StudentLevels, Departments, Colleges
 
 
 class RegisterStudentSerializer(serializers.Serializer):
@@ -15,7 +15,9 @@ class RegisterStudentSerializer(serializers.Serializer):
     mobile_number = serializers.CharField(min_length=11, max_length=11, required=True, allow_null=False)
     matric_number = serializers.CharField(min_length=8, max_length=8, required=True, allow_null=False)
     password = serializers.CharField(required=True, allow_null=False)
-    blood_type = serializers.ChoiceField(choices=[bt.value for bt in BloodTypes], required=False)
+    clinic_number = serializers.CharField(min_length=8, required=False)
+    image = serializers.URLField(required=False)
+    blood_group = serializers.ChoiceField(choices=[bg.value for bg in BloodGroups], required=False)
     genotype = serializers.ChoiceField(choices=[gt.value for gt in GenoTypes], required=False)
     level = serializers.ChoiceField(choices=[lev.value for lev in StudentLevels], required=False)
     department = serializers.ChoiceField(choices=[dpt.value for dpt in Departments], required=False)
@@ -51,6 +53,16 @@ class RegisterStudentSerializer(serializers.Serializer):
 
         return mobile_number
 
+    def validate_clinic_number(self, clinic_number):
+        if clinic_number:
+            student = Student.objects.filter(clinic_number=clinic_number).first()
+            if student:
+                raise serializers.ValidationError(
+                    'Clinic number already exists'
+                )
+
+        return clinic_number
+
     def create(self, data):
         student = Student(**data)
         student.email = data['email'].lower()
@@ -60,25 +72,12 @@ class RegisterStudentSerializer(serializers.Serializer):
 
 
 class ConfirmStudentSerializer(serializers.Serializer):
-    otp = serializers.CharField(min_length=LENGTH_OF_OTP, allow_null=False, required=True)
-    email = serializers.EmailField(required=True, allow_null=False, min_length=5)
-    new_otp = serializers.BooleanField(default=False)
+    otp = serializers.CharField(min_length=LENGTH_OF_OTP, required=False)
 
     def validate(self, data):
-        student = Student.objects.filter(email=data.get('email').lower()).first()
-        if not student:
-            raise serializers.ValidationError(
-                'Student does not have an account'
-            )
-
-        if student.is_confirmed:
-            raise serializers.ValidationError(
-                'Student\'s account is already confirmed'
-            )
-
-        if not data.get('new_otp'):
+        if data.get('otp'):
             otp = data.get('otp')
-            cached_otp = get_from_redis(f'OTP: {data.get("email")}')
+            cached_otp = get_from_redis(f'CONFIRM: {self.context.get("email")}')
             if otp != cached_otp:
                 raise serializers.ValidationError(
                     'OTP code is invalid or expired'
@@ -119,13 +118,16 @@ class LoginStudentSerializer(serializers.Serializer):
         return data
 
 
-class StudentSerializer(RegisterStudentSerializer):
+class StudentSerializer(serializers.ModelSerializer, RegisterStudentSerializer):
     new_password = serializers.CharField(required=False, allow_null=False)
 
     class Meta:
         model = Student
         student_fields = get_student_fields()
         student_fields.remove('password')
+        # The ModelSerializer requires new_password to be part of the specified fields
+        # This is because of the new_password variable defined above
+        student_fields.append('new_password')
         fields = student_fields
 
     def validate(self, data):
@@ -145,7 +147,6 @@ class StudentSerializer(RegisterStudentSerializer):
         return email
 
     def validate_matric_number(self, matric_number):
-        print(matric_number)
         if matric_number:
             raise serializers.ValidationError(
                 'Matric number can\'t be updated'
@@ -168,3 +169,44 @@ class StudentSerializer(RegisterStudentSerializer):
             student.set_password(validated_data['new_password'])
             student.save()
         return validated_data
+
+class ResetPasswordSerializer(serializers.Serializer):
+    otp = serializers.CharField(min_length=LENGTH_OF_OTP, required=False)
+    password = serializers.CharField(required=False)
+    password_again = serializers.CharField(required=False)
+
+    def validate(self, data):
+
+        if data.get('otp'):
+            otp = data.get('otp')
+            cached_otp = get_from_redis(f'RESET: {self.context.get("email")}')
+            if otp != cached_otp:
+                raise serializers.ValidationError(
+                    'OTP code is invalid or expired'
+                )
+        else:
+            return data
+
+        if not data.get('password') and data.get('password_again'):
+            raise serializers.ValidationError(
+                {'password': 'This value can\'t be null since password_again was provided'}
+            )
+
+        if not data.get('password_again') and data.get('password'):
+            raise serializers.ValidationError(
+                {'password_again': 'This value can\'t be null since password was provided'}
+            )
+
+        if data.get('password') and data.get('password_again'):
+            if data.get('password') != data.get('password_again'):
+                raise serializers.ValidationError(
+                        'password and password_again fields must have the same values'
+                    )
+
+        return data
+
+    def update(self, student, data):
+        student.set_password(data.get('password'))
+        student.save()
+        return student
+

@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class BloodTypes(Enum):
+class BloodGroups(Enum):
     a_positive = 'A+'
     a_negative = 'A-'
     b_positive = "B+"
