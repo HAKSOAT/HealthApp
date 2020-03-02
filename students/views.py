@@ -47,7 +47,7 @@ class RegisterStudentViewset(viewsets.ViewSet):
 
 
 class ConfirmStudentViewset(viewsets.ViewSet):
-    """ Viewset for student confirmation """
+    """ Viewset for student confirmation  """
     permission_classes = ()
     authentication_classes = ()
 

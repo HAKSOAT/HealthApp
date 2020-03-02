@@ -8,9 +8,12 @@ https://docs.djangoproject.com/en/3.0/howto/deployment/asgi/
 """
 
 import os
+from dotenv import load_dotenv
+
+load_dotenv('.env')
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.staging-settings')
 
 application = get_asgi_application()

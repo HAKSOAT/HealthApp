@@ -4,10 +4,10 @@ import os
 import sys
 from dotenv import load_dotenv
 
-load_dotenv('.staging-env')
+load_dotenv('.env')
 
 def main():
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.staging-settings')
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
