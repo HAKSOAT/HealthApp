@@ -21,7 +21,7 @@ blocks:
             - pytest
       env_vars:
         - name: SECRET_KEY
-          value: '!2njcg@_pgsd9$tq%zj2-l*0*5kp^e_nzcw)8yy&#e$jfjyb6g'
+          value: 'SECRET_KEY'
         - name: DJANGO_SETTINGS_MODULE
           value: config.settings
         - name: DB_NAME
@@ -36,8 +36,6 @@ blocks:
           value: semaphoredb
         - name: REDIS_CONNECTION_URL
           value: 'redis://127.0.0.1:6379/1'
-        - name: FOO_9
-          value: BAR_9
       prologue:
         commands:
           - sem-version python $PYTHON_VERSION
@@ -52,3 +50,5 @@ blocks:
 promotions:
   - name: Deploy to Heroku
     pipeline_file: heroku.yml
+    auto_promote:
+      when: "result = 'passed' and (branch = 'staging')"
