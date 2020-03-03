@@ -41,3 +41,13 @@ class Token(models.Model):
     is_blacklisted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+
+class Ping(models.Model):
+    id = models.CharField(
+        max_length=LENGTH_OF_ID, primary_key=True, default=generate_id,
+        editable=False
+    )
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    location = models.CharField(max_length=30, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)

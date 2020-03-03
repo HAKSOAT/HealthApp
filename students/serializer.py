@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.hashers import check_password
 
-from students.models import Student
+from students.models import Student, Ping
 from students.utils.generate import LENGTH_OF_OTP
 from students.utils.helpers import get_student_fields, check_password_change
 from utils.helpers import get_from_redis
@@ -210,3 +210,18 @@ class ResetPasswordSerializer(serializers.Serializer):
         student.save()
         return student
 
+
+class PingViewsetSerializer(serializers.Serializer):
+    message = serializers.CharField(max_length=255, allow_null=False)
+    location = serializers.CharField(required=False)
+
+    def create(self, validated_data):
+        student = Student.objects.filter(id=self.context.get('id')).first()
+        ping_data = {
+            'message': validated_data.get('message'),
+            'location': validated_data.get('location'),
+            'student': student
+        }
+        ping = Ping(**ping_data)
+        ping.save()
+        return ping
