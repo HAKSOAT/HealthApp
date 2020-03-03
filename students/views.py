@@ -5,6 +5,7 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework.status import HTTP_400_BAD_REQUEST
 from django.core.mail import send_mail
+from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 
 from config import settings
@@ -13,7 +14,8 @@ from students.serializer import (
     ConfirmStudentSerializer,
     LoginStudentSerializer,
     StudentSerializer,
-    ResetPasswordSerializer
+    ResetPasswordSerializer,
+    PingViewsetSerializer
 )
 from utils.helpers import format_response, save_in_redis, get_from_redis, delete_from_redis
 from students.utils.generate import generate_otp
@@ -123,6 +125,8 @@ class LoginStudentView(APIView):
             'token': token.decode("utf-8"),
             'is_blacklisted': False
         }
+        serializer.validated_data['student'].last_login = timezone.now()
+        serializer.validated_data['student'].save()
         Token(**auth_data).save()
         return format_response(token=token,
                                message='Successfully logged in')
@@ -183,6 +187,10 @@ class ResetPasswordViewset(viewsets.ViewSet):
     permission_classes = ()
     authentication_classes = ()
 
+    @swagger_auto_schema(query_serializer=ResetPasswordSerializer,
+                         operation_description='Reset student\'s password. To request OTP, '
+                                               'the otp field is not needed. However, it is '
+                                               'needed to provide OTP for password reset.')
     def partial_update(self, request, pk):
         data = request.data
         student = Student.objects.filter(matric_number=pk).first()
@@ -220,3 +228,19 @@ class ResetPasswordViewset(viewsets.ViewSet):
         Token.objects.filter(student=student).update(is_blacklisted=True)
         delete_from_redis(f'RESET: {student.email}')
         return format_response(message='Successfully reset password')
+
+
+class PingViewset(viewsets.ViewSet):
+    """ Viewset for Pings """
+
+    @swagger_auto_schema(query_serializer=PingViewsetSerializer,
+                         operation_description='Send a ping.')
+    def create(self, request):
+        data = request.data
+        student = request.user
+        serializer = PingViewsetSerializer(data=data, context={'id': student.id})
+        if not serializer.is_valid():
+            return format_response(error=serializer.errors.get('errors', serializer.errors),
+                                   status=HTTP_400_BAD_REQUEST)
+        serializer.save()
+        return format_response(message='Successfully sent a ping')
