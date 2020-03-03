@@ -21,7 +21,7 @@ class JSONWebTokenAuthentication(BaseAuthentication):
         try:
             payload = jwt.decode(
                 token[1], settings.SECRET_KEY, algorithms=['HS256'])
-            user = Student.objects.filter(id=payload['uid']).first()
+            student = Student.objects.filter(id=payload['uid']).first()
         except jwt.DecodeError:
             raise exceptions.AuthenticationFailed(
                 {'error': 'Authentication Failed',
@@ -31,14 +31,14 @@ class JSONWebTokenAuthentication(BaseAuthentication):
                 {'error': 'Authentication Failed',
                  'message': 'Token has expired'})
 
-        if not user:
+        if not student:
             raise exceptions.AuthenticationFailed(
                 {'error': 'Authentication Failed',
                  'message': 'Cannot validate your access credentials'})
 
-        if not user.is_active:
+        if not student.is_confirmed:
             raise exceptions.AuthenticationFailed(
                 {'error': 'Authentication Failed',
-                 'message': 'User has not been verified'})
+                 'message': 'Account is not yet confirmed'})
 
-        return user, payload
+        return student, payload
