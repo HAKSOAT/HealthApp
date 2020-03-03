@@ -10,10 +10,11 @@ def get_student_fields(new=None):
 
 def check_password_change(student, old, new):
     if old and not new:
-        return{'new_password': 'Ensure this value is provided'}
+        return {'new_password': 'Ensure this value is provided'}
     elif not old and new:
-        return{'password': 'Ensure this value is provided'}
+        return {'password': 'Ensure this value is provided'}
     elif old and new and not student.check_password(old):
         return{'password': 'Value is incorrect'}
-    elif old == new:
-        return{'new_password': 'Value must be different'}
+    if old and new:
+        if old == new:
+            return {'new_password': 'Value must be different'}

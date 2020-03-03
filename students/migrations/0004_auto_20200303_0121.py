@@ -21,11 +21,6 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
             ],
         ),
-        migrations.RenameField(
-            model_name='student',
-            old_name='blood_type',
-            new_name='blood_group',
-        ),
         migrations.AddField(
             model_name='student',
             name='clinic_number',
