@@ -3,7 +3,7 @@ runserver:
 
 migrate:
 	@ echo 'Making and running migrations >>>'
-	@ python manage.py makemigrations && python manage.py migrate
+	@ yes | python manage.py makemigrations && yes | python manage.py migrate
 
 shell:
 	@ python manage.py shell

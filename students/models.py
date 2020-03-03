@@ -31,11 +31,13 @@ class Student(AbstractBaseUser):
     is_confirmed = models.BooleanField(default=False)
 
 
-class BlackListedToken(models.Model):
+class Token(models.Model):
     id = models.CharField(
         max_length=LENGTH_OF_ID, primary_key=True, default=generate_id,
         editable=False
     )
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     token = models.CharField(max_length=500)
+    is_blacklisted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+

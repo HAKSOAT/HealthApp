@@ -29,3 +29,12 @@ def get_from_redis(key):
         2. Retrieves the data cached using key or None
     """
     return cache.get(key)
+
+
+def delete_from_redis(key):
+    """
+        This function deletes from redis
+        1. This function takes one argument: key
+        2. Deletes the data cached using key
+    """
+    cache.delete(key)

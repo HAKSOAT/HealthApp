@@ -15,9 +15,9 @@ from students.serializer import (
     StudentSerializer,
     ResetPasswordSerializer
 )
-from utils.helpers import format_response, save_in_redis, get_from_redis
+from utils.helpers import format_response, save_in_redis, get_from_redis, delete_from_redis
 from students.utils.generate import generate_otp
-from students.models import Student, BlackListedToken
+from students.models import Student, Token
 
 
 class RegisterStudentViewset(viewsets.ViewSet):
@@ -43,7 +43,7 @@ class RegisterStudentViewset(viewsets.ViewSet):
             [data['email']],
             fail_silently=False
         )
-        save_in_redis(f'OTP: {data["email"]}', otp, 60*5)
+        save_in_redis(f'CONFIRM: {data["email"]}', otp, 60*5)
         return format_response(message='Successfully created an account. '
                                        'Check email to get OTP and proceed to confirm account.')
 
@@ -92,6 +92,7 @@ class ConfirmStudentViewset(viewsets.ViewSet):
             return format_response(message='Successfully generated Account Confirmation OTP')
 
         serializer.save()
+        delete_from_redis(f'CONFIRM: {student.email}')
         return format_response(message='Successfully confirmed student')
 
 
@@ -112,11 +113,17 @@ class LoginStudentView(APIView):
                                    status=HTTP_400_BAD_REQUEST)
 
         token = jwt.encode({
-            'uid': serializer.validated_data['student_id'],
+            'uid': serializer.validated_data['student'].id,
             'iat': settings.JWT_SETTINGS['ISS_AT'](),
             'exp': settings.JWT_SETTINGS['EXP_AT']()
         }, settings.SECRET_KEY)
 
+        auth_data = {
+            'student': serializer.validated_data['student'],
+            'token': token.decode("utf-8"),
+            'is_blacklisted': False
+        }
+        Token(**auth_data).save()
         return format_response(token=token,
                                message='Successfully logged in')
 
@@ -130,14 +137,16 @@ class LogoutStudentView(APIView):
         token = request.headers["authorization"].split()[1]
         auth_data = {
             'student': user,
-            'token': token
+            'token': token,
+            'is_blacklisted': False
         }
-        listed_token = BlackListedToken.objects.filter(**auth_data).first()
-        if listed_token:
+        listed_token = Token.objects.filter(**auth_data).first()
+        if not listed_token:
             return format_response(error='Student is already logged out',
                                    status=HTTP_400_BAD_REQUEST)
 
-        BlackListedToken(**auth_data).save()
+        listed_token.is_blacklisted = True
+        listed_token.save()
         return format_response(message='Successfully logged out')
 
 
@@ -164,6 +173,8 @@ class StudentView(APIView):
                                    status=HTTP_400_BAD_REQUEST)
 
         serializer.save()
+        if data.get('new_password', None):
+            Token.objects.filter(student=student).update(is_blacklisted=True)
         return format_response(message='Successfully updated student')
 
 
@@ -180,7 +191,7 @@ class ResetPasswordViewset(viewsets.ViewSet):
                                    status=HTTP_400_BAD_REQUEST)
 
         if not student.is_confirmed:
-            return format_response(error='Account is yet to be confirmed',
+            return format_response(error='Account is not yet confirmed',
                                    status=HTTP_400_BAD_REQUEST)
 
         context = {'email': student.email}
@@ -206,5 +217,6 @@ class ResetPasswordViewset(viewsets.ViewSet):
             return format_response(message='Successfully generated Password Reset OTP')
 
         serializer.save()
+        Token.objects.filter(student=student).update(is_blacklisted=True)
+        delete_from_redis(f'RESET: {student.email}')
         return format_response(message='Successfully reset password')
-

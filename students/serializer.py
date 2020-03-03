@@ -114,7 +114,7 @@ class LoginStudentSerializer(serializers.Serializer):
                 'Wrong password'
             )
 
-        data['student_id'] = student.id
+        data['student'] = student
         return data
 
 
