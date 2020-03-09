@@ -188,7 +188,7 @@ class StudentView(APIView):
         return format_response(message='Successfully updated student')
 
 
-class ResetPasswordViewset(viewsets.ViewSet):
+class ResetPasswordView(APIView):
     """ View for resetting password """
     permission_classes = ()
     authentication_classes = ()
@@ -197,23 +197,15 @@ class ResetPasswordViewset(viewsets.ViewSet):
                          operation_description='Reset student\'s password. To request OTP, '
                                                'the otp field is not needed. However, it is '
                                                'needed to provide OTP for password reset.')
-    def partial_update(self, request, pk):
+    def patch(self, request):
         data = request.data
-        student = Student.objects.filter(matric_number=pk).first()
-        if not student:
-            return format_response(error='Student does not have an account',
-                                   status=HTTP_400_BAD_REQUEST)
 
-        if not student.is_confirmed:
-            return format_response(error='Account is not yet confirmed',
-                                   status=HTTP_400_BAD_REQUEST)
-
-        context = {'email': student.email}
-        serializer = ResetPasswordSerializer(student, data=data, context=context)
+        serializer = ResetPasswordSerializer(data=data)
         if not serializer.is_valid():
             return format_response(error=serializer.errors.get('errors', serializer.errors),
                                    status=HTTP_400_BAD_REQUEST)
 
+        student = Student.objects.filter(email=data.get('email')).first()
         if not data.get('otp', None):
             otp = get_from_redis(f'RESET: {student.email}')
             if otp:
@@ -230,7 +222,7 @@ class ResetPasswordViewset(viewsets.ViewSet):
             )
             return format_response(message='Successfully generated Password Reset OTP')
 
-        serializer.save()
+        serializer.update(student, serializer.data)
         Token.objects.filter(student=student).update(is_blacklisted=True)
         delete_from_redis(f'RESET: {student.email}')
         return format_response(message='Successfully reset password')
