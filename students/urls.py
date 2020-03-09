@@ -7,7 +7,7 @@ from drf_yasg import openapi
 from students.views import (
     RegisterStudentViewset, ConfirmStudentViewset,
     LoginStudentView, LogoutStudentView, StudentView,
-    ResetPasswordViewset, PingViewset
+    ResetPasswordView, PingViewset
 )
 
 swagger_schema_view = get_schema_view(
@@ -24,10 +24,12 @@ swagger_schema_view = get_schema_view(
 
 
 router = DefaultRouter(trailing_slash=False)
-router.register('register', RegisterStudentViewset, basename='register-student')
-router.register('confirm', ConfirmStudentViewset, basename='confirm-student')
-router.register('reset-password', ResetPasswordViewset, basename='reset-password')
-router.register('ping', PingViewset, basename='ping')
+router.register(
+    'register', RegisterStudentViewset, basename='register-student')
+router.register(
+    'confirm', ConfirmStudentViewset, basename='confirm-student')
+router.register(
+    'ping', PingViewset, basename='ping')
 
 
 urlpatterns = [
@@ -35,5 +37,7 @@ urlpatterns = [
     path(r'student', StudentView.as_view()),
     path(r'login', LoginStudentView.as_view()),
     path(r'logout', LogoutStudentView.as_view()),
-    path(r'swagger', swagger_schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui')
+    path(r'reset-password', ResetPasswordView.as_view()),
+    path(r'swagger', swagger_schema_view.with_ui(
+        'swagger', cache_timeout=0), name='schema-swagger-ui')
 ]

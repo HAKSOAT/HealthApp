@@ -37,15 +37,17 @@ class RegisterStudentSerializer(serializers.Serializer):
 
 
 class ConfirmStudentSerializer(serializers.Serializer):
-    otp = serializers.CharField(min_length=LENGTH_OF_OTP, required=False)
+    otp = serializers.CharField(min_length=LENGTH_OF_OTP,
+                                max_length=LENGTH_OF_OTP, required=False)
 
     def validate(self, data):
         if data.get('otp'):
             otp = data.get('otp')
-            cached_otp = get_from_redis(f'CONFIRM: {self.context.get("email")}')
+            cached_otp = get_from_redis(
+                f'CONFIRM: {self.context.get("email")}')
             if otp != cached_otp:
                 raise serializers.ValidationError(
-                    'OTP code is invalid or expired'
+                    {'otp': 'OTP code is invalid or expired'}
                 )
 
         return data
@@ -160,29 +162,28 @@ class StudentSerializer(serializers.ModelSerializer):
         return clinic_number
 
     def update(self, student, validated_data):
-        Student.objects.update_or_create(
-            id=student.id,
-            defaults=validated_data
-        )
         if validated_data.get('new_password'):
             student.set_password(validated_data['new_password'])
             student.save()
+            validated_data.pop('new_password')
+            validated_data.pop('password')
+        Student.objects.filter(id=student.id).update(**validated_data)
         return validated_data
 
 
 class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
     otp = serializers.CharField(min_length=LENGTH_OF_OTP, required=False)
     password = serializers.CharField(required=False)
     password_again = serializers.CharField(required=False)
 
     def validate(self, data):
-
         if data.get('otp'):
             otp = data.get('otp')
-            cached_otp = get_from_redis(f'RESET: {self.context.get("email")}')
+            cached_otp = get_from_redis(f'RESET: {data.get("email")}')
             if otp != cached_otp:
                 raise serializers.ValidationError(
-                    'OTP code is invalid or expired'
+                    {'otp': 'OTP code is invalid or expired'}
                 )
         else:
             return data
@@ -200,10 +201,22 @@ class ResetPasswordSerializer(serializers.Serializer):
         if data.get('password') and data.get('password_again'):
             if data.get('password') != data.get('password_again'):
                 raise serializers.ValidationError(
-                        'password and password_again fields must have the same values'
-                    )
+                    {'password': 'password and password_again fields must have the same values'}
+                )
 
         return data
+
+    def validate_email(self, email):
+        student = Student.objects.filter(email=email).first()
+        if not student:
+            raise serializers.ValidationError(
+                'Student does not have an account'
+            )
+        if not student.is_confirmed:
+            raise serializers.ValidationError(
+                'Account is not yet confirmed'
+            )
+        return student
 
     def update(self, student, data):
         student.set_password(data.get('password'))
