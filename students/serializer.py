@@ -23,7 +23,7 @@ class RegisterStudentSerializer(serializers.Serializer):
         student = Student.objects.filter(email=email).first()
         if student:
             raise serializers.ValidationError(
-                'Email already exists'
+                {'email': 'Email already exists'}
             )
 
         return email
@@ -67,18 +67,18 @@ class LoginStudentSerializer(serializers.Serializer):
             email=data.get('email').lower()).first()
         if not student:
             raise serializers.ValidationError(
-                'Account does not exist'
+                {'email': 'Account does not exist'}
             )
 
         if not student.is_confirmed:
             raise serializers.ValidationError(
-                'Account is not yet confirmed'
+                {'email': 'Account is not yet confirmed'}
             )
 
         password_valid = check_password(data.get('password'), student.password)
         if not password_valid:
             raise serializers.ValidationError(
-                'Wrong password'
+                {'password': 'Wrong password'}
             )
 
         data['student'] = student
@@ -128,7 +128,7 @@ class StudentSerializer(serializers.ModelSerializer):
         student = Student.objects.filter(email=email).first()
         if student:
             raise serializers.ValidationError(
-                'Email already exists'
+                {'email': 'Email already exists'}
             )
 
         return email
@@ -137,7 +137,7 @@ class StudentSerializer(serializers.ModelSerializer):
         student = Student.objects.filter(matric_number=matric_number).first()
         if student:
             raise serializers.ValidationError(
-                'Matric number already exists'
+                {'matric_number': 'Matric number already exists'}
             )
 
         return matric_number
@@ -146,7 +146,7 @@ class StudentSerializer(serializers.ModelSerializer):
         student = Student.objects.filter(mobile_number=mobile_number).first()
         if student:
             raise serializers.ValidationError(
-                'Mobile number already exists'
+                {'mobile_number': 'Mobile number already exists'}
             )
 
         return mobile_number
@@ -156,7 +156,7 @@ class StudentSerializer(serializers.ModelSerializer):
             student = Student.objects.filter(clinic_number=clinic_number).first()
             if student:
                 raise serializers.ValidationError(
-                    'Clinic number already exists'
+                    {'clinic_number': 'Clinic number already exists'}
                 )
 
         return clinic_number
@@ -210,11 +210,11 @@ class ResetPasswordSerializer(serializers.Serializer):
         student = Student.objects.filter(email=email).first()
         if not student:
             raise serializers.ValidationError(
-                'Student does not have an account'
+                {'email': 'Student does not have an account'}
             )
         if not student.is_confirmed:
             raise serializers.ValidationError(
-                'Account is not yet confirmed'
+                {'email': 'Account is not yet confirmed'}
             )
         return student
 

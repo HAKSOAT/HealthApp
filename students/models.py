@@ -15,11 +15,11 @@ class Student(AbstractBaseUser):
     last_name = models.CharField(max_length=100, null=False, blank=False)
     password = models.CharField(max_length=100, null=False)
     mobile_number = models.CharField(
-        max_length=11, null=False, blank=False, unique=True)
+        max_length=11, null=True, unique=True)
     email = models.EmailField(
         max_length=100, null=False, blank=False, unique=True)
     matric_number = models.CharField(
-        max_length=8, null=False, blank=False, unique=True)
+        max_length=8, null=True, unique=True)
     clinic_number = models.CharField(max_length=8, null=True, unique=True)
     image = models.URLField(null=True)
     department = models.CharField(
