@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 @pytest.mark.django_db
 class TestAccountPing():
-    url = '/api/v1/ping'
+    url = '/api/v1/student/ping'
 
     def test_ping(self, client, max_user, auth_header_max_user):
         data = {'message': 'test',

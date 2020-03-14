@@ -45,10 +45,15 @@ class Token(models.Model):
 
 
 class Ping(models.Model):
+
+    class Meta:
+        ordering = ['is_read', '-created_at']
+
     id = models.CharField(
         max_length=LENGTH_OF_ID, primary_key=True, default=generate_id,
         editable=False
     )
+    is_read = models.BooleanField(default=False)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     message = models.CharField(max_length=255)
     location = models.CharField(max_length=30, null=True)

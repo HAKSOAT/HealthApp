@@ -15,7 +15,29 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+from utils.constants import student_base_url, health_centre_base_url
+from students.views import LogoutView
+
+swagger_schema_view = get_schema_view(
+   openapi.Info(
+      title="Students API",
+      default_version='v1',
+      description="Provides end points for the students API",
+      license=openapi.License(name="BSD License"),
+   ),
+   public=True,
+   permission_classes=(),
+   authentication_classes=()
+)
+
 
 urlpatterns = [
-    path('api/v1/', include('students.urls')),
+    path(student_base_url, include('students.urls')),
+    path(health_centre_base_url, include('healthcentre.urls')),
+    path('api/v1/logout', LogoutView.as_view()),
+    path(r'swagger', swagger_schema_view.with_ui(
+            'swagger', cache_timeout=0), name='schema-swagger-ui')
 ]

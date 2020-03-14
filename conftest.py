@@ -51,7 +51,7 @@ def max_user(max_user_data):
 @pytest.fixture()
 def auth_header(client, min_user_data, min_user):
     """ Logs in min student to retrieve authetication token """
-    response = client.post('/api/v1/login',
+    response = client.post('/api/v1/student/login',
                            data={
                                'email': min_user_data['email'],
                                'password': min_user_data['password']
@@ -64,7 +64,7 @@ def auth_header(client, min_user_data, min_user):
 @pytest.fixture()
 def auth_header_max_user(client, max_user_data, max_user):
     """ Logs in max student to retrieve authetication token """
-    response = client.post('/api/v1/login',
+    response = client.post('/api/v1/student/login',
                            data={
                                'email': max_user_data['email'],
                                'password': max_user_data['password']

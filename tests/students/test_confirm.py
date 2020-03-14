@@ -6,7 +6,7 @@ import pytest
 
 @pytest.mark.django_db
 class TestAccountConfirmation:
-    url = '/api/v1/confirm'
+    url = '/api/v1/student/confirm'
 
     @patch('students.serializer.get_from_redis')
     def test_confirm(self, get_redis, client, min_user):

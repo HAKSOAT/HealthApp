@@ -171,11 +171,12 @@ if DEBUG:
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'students.authentication.JSONWebTokenAuthentication',
+        'utils.authentication.JSONWebTokenAuthentication',
     ),
     'DEFAULT_RENDERER_CLASSES': DEFAULT_RENDERER_CLASSES,
     'DEFAULT_PERMISSION_CLASSES': (
-        'students.permissions.IsTokenBlackListed',
+        'utils.permissions.IsTokenBlackListed',
+        'utils.permissions.HasSufficientPermissions'
     ),
     'DEFAULT_SCHEMA_CLASS': (
         'rest_framework.schemas.coreapi.AutoSchema'

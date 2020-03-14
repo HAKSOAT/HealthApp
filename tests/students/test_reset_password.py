@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 @pytest.mark.django_db
 class TestAccountResetPassword():
-    url = '/api/v1/reset-password'
+    url = '/api/v1/student/reset-password'
 
     @patch('students.serializer.get_from_redis')
     def test_reset(self, get_redis, client, max_user):

@@ -7,7 +7,7 @@ from students.models import Student
 
 @pytest.mark.django_db
 class TestAccountStudent():
-    url = '/api/v1/student'
+    url = '/api/v1/student/profile'
 
     def test_view_profile(self, client, auth_header):
         response = client.get(self.url, **auth_header)

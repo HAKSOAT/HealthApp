@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 @pytest.mark.django_db
 class TestAccountRegistration():
-    url = '/api/v1/register'
+    url = '/api/v1/student/register'
 
     @patch('students.views.send_mail')
     def test_register(self, mock_send_mail, client, min_user_data):
