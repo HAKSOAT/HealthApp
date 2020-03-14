@@ -1,0 +1,13 @@
+[
+  {
+    "model": "healthcentre.worker",
+    "pk": 1,
+    "fields": {
+      "id": "hdic7302icms",
+      "first_name": "Ciroma",
+      "username": "ciad4877",
+      "last_name": "Adekunle",
+      "password": "pbkdf2_sha256$180000$IydyzWNkZsjg$BVH8ddrNqBSH0g+uUqjSx1E88nG7+ZycYb1XoUOW5Ik="
+    }
+  }
+]

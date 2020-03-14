@@ -5,6 +5,7 @@ from rest_framework import exceptions
 from rest_framework.authentication import (
     BaseAuthentication, get_authorization_header)
 from students.models import Student
+from healthcentre.models import Worker
 
 
 class JSONWebTokenAuthentication(BaseAuthentication):
@@ -21,7 +22,8 @@ class JSONWebTokenAuthentication(BaseAuthentication):
         try:
             payload = jwt.decode(
                 token[1], settings.SECRET_KEY, algorithms=['HS256'])
-            student = Student.objects.filter(id=payload['uid']).first()
+            user = Student.objects.filter(id=payload['uid']).first() or \
+                   Worker.objects.filter(id=payload['uid']).first()
         except jwt.DecodeError:
             raise exceptions.AuthenticationFailed(
                 {'error': 'Authentication Failed',
@@ -31,14 +33,15 @@ class JSONWebTokenAuthentication(BaseAuthentication):
                 {'error': 'Authentication Failed',
                  'message': 'Token has expired'})
 
-        if not student:
+        if not user:
             raise exceptions.AuthenticationFailed(
                 {'error': 'Authentication Failed',
                  'message': 'Cannot validate your access credentials'})
 
-        if not student.is_confirmed:
-            raise exceptions.AuthenticationFailed(
-                {'error': 'Authentication Failed',
-                 'message': 'Account is not yet confirmed'})
+        if user._meta.object_name == Student._meta.object_name:
+            if not user.is_confirmed:
+                raise exceptions.AuthenticationFailed(
+                    {'error': 'Authentication Failed',
+                     'message': 'Account is not yet confirmed'})
 
-        return student, payload
+        return user, payload

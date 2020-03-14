@@ -53,3 +53,8 @@ class Departments(Enum):
     htm = 'HTM'
     # COLVET
     vet = 'VET'
+
+
+class UserTypes(Enum):
+    student = 'Student'
+    worker = 'Worker'
