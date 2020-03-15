@@ -22,13 +22,13 @@ def save_in_redis(key, data, timeout):
     cache.set(key, data, timeout=timeout)
 
 
-def get_from_redis(key):
+def get_from_redis(key, default):
     """
         This function save in redis
         1. This function takes one argument: key
         2. Retrieves the data cached using key or None
     """
-    return cache.get(key)
+    return cache.get(key, default)
 
 
 def delete_from_redis(key):

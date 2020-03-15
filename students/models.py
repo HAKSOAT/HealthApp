@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 
 from students.utils.generate import LENGTH_OF_ID, generate_id
-from students.utils.enums import Departments
+from students.utils.enums import Departments, UserTypes
 
 
 class Student(AbstractBaseUser):
@@ -34,17 +34,26 @@ class Token(models.Model):
         max_length=LENGTH_OF_ID, primary_key=True, default=generate_id,
         editable=False
     )
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    user_id = models.CharField(max_length=LENGTH_OF_ID, default=generate_id)
+    user_table = models.CharField(max_length=20,
+                                  choices=[(user_type, user_type.value)
+                                           for user_type in UserTypes],
+                                  default=UserTypes.student)
     token = models.CharField(max_length=500)
     is_blacklisted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Ping(models.Model):
+
+    class Meta:
+        ordering = ['is_read', '-created_at']
+
     id = models.CharField(
         max_length=LENGTH_OF_ID, primary_key=True, default=generate_id,
         editable=False
     )
+    is_read = models.BooleanField(default=False)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     message = models.CharField(max_length=255)
     location = models.CharField(max_length=30, null=True)

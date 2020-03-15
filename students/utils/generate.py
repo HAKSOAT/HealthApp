@@ -14,3 +14,10 @@ def generate_id():
 def generate_otp():
     """Generates an random strings from 0-9 with the defined LENGTH_OF_OTP"""
     return str(uuid.uuid4().int)[:LENGTH_OF_OTP]
+
+
+def generate_username(first_name, last_name):
+    """Generates a username from first two characters of first and last name,
+    then three random characters"""
+    username = first_name[:2] + last_name[:2] + str(uuid.uuid4().int)[:4]
+    return username

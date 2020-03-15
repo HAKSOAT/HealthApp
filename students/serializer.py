@@ -6,6 +6,7 @@ from students.utils.generate import LENGTH_OF_OTP
 from students.utils.helpers import get_student_fields, check_password_change
 from utils.helpers import get_from_redis
 from students.utils.enums import Departments
+from healthcentre.models import Worker
 
 
 class RegisterStudentSerializer(serializers.Serializer):
@@ -58,30 +59,36 @@ class ConfirmStudentSerializer(serializers.Serializer):
         return student
 
 
-class LoginStudentSerializer(serializers.Serializer):
+class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(allow_null=False, required=True)
     password = serializers.CharField(allow_null=False, required=True)
 
     def validate(self, data):
-        student = Student.objects.filter(
-            email=data.get('email').lower()).first()
-        if not student:
+        if self.context.get('user_type') == 'student':
+            user = Student.objects.filter(
+                email=data.get('email').lower()).first()
+        elif self.context.get('user_type') == 'healthcentre':
+            user = Worker.objects.filter(
+                username=data.get('email').lower()).first()
+
+        if not user:
             raise serializers.ValidationError(
                 {'email': 'Account does not exist'}
             )
 
-        if not student.is_confirmed:
-            raise serializers.ValidationError(
-                {'email': 'Account is not yet confirmed'}
-            )
+        if isinstance(user, Student):
+            if not user.is_confirmed:
+                raise serializers.ValidationError(
+                    {'email': 'Account is not yet confirmed'}
+                )
 
-        password_valid = check_password(data.get('password'), student.password)
+        password_valid = check_password(data.get('password'), user.password)
         if not password_valid:
             raise serializers.ValidationError(
                 {'password': 'Wrong password'}
             )
 
-        data['student'] = student
+        data['user'] = user
         return data
 
 

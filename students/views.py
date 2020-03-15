@@ -12,7 +12,7 @@ from config import settings
 from students.serializer import (
     RegisterStudentSerializer,
     ConfirmStudentSerializer,
-    LoginStudentSerializer,
+    LoginSerializer,
     StudentSerializer,
     ResetPasswordSerializer,
     PingViewsetSerializer
@@ -102,55 +102,57 @@ class ConfirmStudentViewset(viewsets.ViewSet):
         return format_response(message='Successfully confirmed student')
 
 
-class LoginStudentView(APIView):
-    """ Viewset for student logging in """
+class LoginView(APIView):
+    """ Viewset for logging in """
     permission_classes = ()
     authentication_classes = ()
 
-    @swagger_auto_schema(request_body=LoginStudentSerializer, query_serializer=LoginStudentSerializer,
-                         operation_description='Logs in a student. '
-                                               'Matric number or email are valid'
+    @swagger_auto_schema(request_body=LoginSerializer, query_serializer=LoginSerializer,
+                         operation_description='Logs in a user'
                          )
     def post(self, request):
         data = request.data
-        serializer = LoginStudentSerializer(data=data)
+        context = {'user_type': request._request.path_info.split('/')[3]}
+        serializer = LoginSerializer(data=data, context=context)
         if not serializer.is_valid():
             return format_response(error=serializer.errors.get('errors', serializer.errors),
                                    status=HTTP_400_BAD_REQUEST)
 
         token = jwt.encode({
-            'uid': serializer.validated_data['student'].id,
+            'uid': serializer.validated_data['user'].id,
             'iat': settings.JWT_SETTINGS['ISS_AT'](),
             'exp': settings.JWT_SETTINGS['EXP_AT']()
         }, settings.SECRET_KEY)
 
         auth_data = {
-            'student': serializer.validated_data['student'],
+            'user_id': serializer.validated_data['user'].id,
+            'user_table': serializer.validated_data['user']._meta.object_name,
             'token': token.decode("utf-8"),
             'is_blacklisted': False
         }
-        serializer.validated_data['student'].last_login = timezone.now()
-        serializer.validated_data['student'].save()
+        serializer.validated_data['user'].last_login = timezone.now()
+        serializer.validated_data['user'].save()
         Token(**auth_data).save()
         return format_response(token=token,
                                message='Successfully logged in')
 
 
-class LogoutStudentView(APIView):
-    """ View for student log out """
+class LogoutView(APIView):
+    """ View for user log out """
     permission_classes = ()
 
     def post(self, request):
         user = request.user
         token = request.headers["authorization"].split()[1]
         auth_data = {
-            'student': user,
+            'user_id': user.id,
+            'user_table': user._meta.object_name,
             'token': token,
             'is_blacklisted': False
         }
         listed_token = Token.objects.filter(**auth_data).first()
         if not listed_token:
-            return format_response(error='Student is already logged out',
+            return format_response(error='User is already logged out',
                                    status=HTTP_400_BAD_REQUEST)
 
         listed_token.is_blacklisted = True
@@ -184,7 +186,7 @@ class StudentView(APIView):
 
         serializer.save()
         if data.get('new_password', None):
-            Token.objects.filter(student=student).update(is_blacklisted=True)
+            Token.objects.filter(user_id=student.id).update(is_blacklisted=True)
         return format_response(message='Successfully updated student')
 
 
@@ -223,7 +225,7 @@ class ResetPasswordView(APIView):
             return format_response(message='Successfully generated Password Reset OTP')
 
         serializer.update(student, serializer.data)
-        Token.objects.filter(student=student).update(is_blacklisted=True)
+        Token.objects.filter(user_id=student.id).update(is_blacklisted=True)
         delete_from_redis(f'RESET: {student.email}')
         return format_response(message='Successfully reset password')
 

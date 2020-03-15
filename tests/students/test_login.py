@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 @pytest.mark.django_db
 class TestAccountLogin():
-    url = '/api/v1/login'
+    url = '/api/v1/student/login'
 
     def test_login(self, client, min_user_data, min_user):
         data = {'email': min_user_data['email'],

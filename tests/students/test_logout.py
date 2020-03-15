@@ -21,4 +21,4 @@ class TestAccountLogout():
         logged_out_mock.return_value = Token.objects.none()
         response = client.post(self.url, **auth_header)
         assert response.status_code == 400
-        assert response.data['error'] == 'Student is already logged out'
+        assert response.data['error'] == 'User is already logged out'
