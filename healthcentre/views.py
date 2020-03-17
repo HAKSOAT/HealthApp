@@ -1,16 +1,13 @@
 from django.utils import timezone
 from rest_framework import mixins, viewsets
-from rest_framework.views import APIView
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND
+from rest_framework.status import HTTP_404_NOT_FOUND
 from drf_yasg.utils import swagger_auto_schema
 
 from healthcentre.serializer import (
     PingViewsetSerializer
 )
 from students.serializer import StudentSerializer
-from utils.helpers import format_response, save_in_redis, get_from_redis, \
-    delete_from_redis
-from students.utils.generate import generate_otp
+from utils.helpers import format_response, save_in_redis, get_from_redis
 from students.models import Ping, Student
 from utils.authentication import APIKeyAuthentication
 
@@ -18,7 +15,7 @@ from utils.authentication import APIKeyAuthentication
 class StudentView(mixins.RetrieveModelMixin,
                   viewsets.GenericViewSet):
     """ View for student's information """
-
+    serializer_class = StudentSerializer
     def retrieve(self, request, pk):
         student = Student.objects.filter(id=pk).first()
         if not student:
@@ -26,7 +23,7 @@ class StudentView(mixins.RetrieveModelMixin,
                                    message='Student not found',
                                    status=HTTP_404_NOT_FOUND)
 
-        serializer = StudentSerializer(student)
+        serializer = self.serializer_class(student)
         data = serializer.data
         data.pop('password')
         return format_response(data=data,
@@ -38,7 +35,7 @@ class PingViewset(mixins.RetrieveModelMixin,
                   viewsets.GenericViewSet):
     """ Viewset for Pings """
 
-    @swagger_auto_schema(request_body=PingViewsetSerializer, query_serializer=PingViewsetSerializer,
+    @swagger_auto_schema(query_serializer=PingViewsetSerializer,
                          operation_description='View a ping.')
     def retrieve(self, request, pk):
         ping = Ping.objects.filter(id=pk).first()
@@ -53,8 +50,7 @@ class PingViewset(mixins.RetrieveModelMixin,
         return format_response(data=serializer.data,
                                message='Successfully retrieved Ping')
 
-    @swagger_auto_schema(request_body=PingViewsetSerializer,
-                         query_serializer=PingViewsetSerializer,
+    @swagger_auto_schema(query_serializer=PingViewsetSerializer,
                          operation_description='View all pings')
     def list(self, request):
         pings = Ping.objects.all()

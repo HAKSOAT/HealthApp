@@ -18,7 +18,8 @@ from django.urls import path, include
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
-from utils.constants import student_base_url, health_centre_base_url
+from utils.constants import student_base_url, health_centre_base_url, \
+    firstaid_base_url
 from students.views import LogoutView
 
 swagger_schema_view = get_schema_view(
@@ -37,7 +38,8 @@ swagger_schema_view = get_schema_view(
 urlpatterns = [
     path(student_base_url, include('students.urls')),
     path(health_centre_base_url, include('healthcentre.urls')),
+    path(firstaid_base_url, include('firstaid.urls')),
     path('api/v1/logout', LogoutView.as_view()),
-    path(r'swagger', swagger_schema_view.with_ui(
+    path(r'api/v1/swagger', swagger_schema_view.with_ui(
             'swagger', cache_timeout=0), name='schema-swagger-ui')
 ]

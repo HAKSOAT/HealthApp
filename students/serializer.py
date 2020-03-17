@@ -7,26 +7,31 @@ from students.utils.helpers import get_student_fields, check_password_change
 from utils.helpers import get_from_redis
 from students.utils.enums import Departments
 from healthcentre.models import Worker
+from students.utils.serializer_checks import RegisterStudent
 
 
 class RegisterStudentSerializer(serializers.Serializer):
-    first_name = serializers.CharField(
-        min_length=2, allow_null=False, required=True)
-    last_name = serializers.CharField(
-        min_length=2, allow_null=False, required=True)
-    email = serializers.EmailField(required=True, allow_null=False)
-    password = serializers.CharField(required=True, allow_null=False)
+    first_name = serializers.CharField(default='')
+    last_name = serializers.CharField(default='')
+    email = serializers.CharField(default='')
+    password = serializers.CharField(default='')
 
     class Meta:
         model = Student
 
+    def validate_first_name(self, first_name):
+        first_name = RegisterStudent.check_name(first_name, 'First name')
+        return first_name
+
+    def validate_last_name(self, last_name):
+        last_name = RegisterStudent.check_name(last_name, 'Last name')
+        return last_name
+
     def validate_email(self, email):
+        email = RegisterStudent.check_email(email)
         student = Student.objects.filter(email=email).first()
         if student:
-            raise serializers.ValidationError(
-                {'email': 'Email already exists'}
-            )
-
+            raise serializers.ValidationError('Email already exists')
         return email
 
     def create(self, data):
@@ -38,20 +43,18 @@ class RegisterStudentSerializer(serializers.Serializer):
 
 
 class ConfirmStudentSerializer(serializers.Serializer):
-    otp = serializers.CharField(min_length=LENGTH_OF_OTP,
-                                max_length=LENGTH_OF_OTP, required=False)
+    otp = serializers.CharField(default='')
 
-    def validate(self, data):
-        if data.get('otp'):
-            otp = data.get('otp')
+    def validate_otp(self, otp):
+        if otp:
             cached_otp = get_from_redis(
-                f'CONFIRM: {self.context.get("email")}')
+                f'CONFIRM: {self.context.get("email")}', None)
             if otp != cached_otp:
                 raise serializers.ValidationError(
-                    {'otp': 'OTP code is invalid or expired'}
+                    'OTP is invalid or expired'
                 )
 
-        return data
+        return otp
 
     def update(self, student, *args):
         student.is_confirmed = True
@@ -141,7 +144,9 @@ class StudentSerializer(serializers.ModelSerializer):
         return email
 
     def validate_matric_number(self, matric_number):
-        student = Student.objects.filter(matric_number=matric_number).first()
+        student = Student.objects.filter(
+            matric_number=matric_number).exclude(
+            id=self.context.get('id')).first()
         if student:
             raise serializers.ValidationError(
                 {'matric_number': 'Matric number already exists'}
@@ -150,7 +155,9 @@ class StudentSerializer(serializers.ModelSerializer):
         return matric_number
 
     def validate_mobile_number(self, mobile_number):
-        student = Student.objects.filter(mobile_number=mobile_number).first()
+        student = Student.objects.filter(
+            mobile_number=mobile_number).exclude(
+            id=self.context.get('id')).first()
         if student:
             raise serializers.ValidationError(
                 {'mobile_number': 'Mobile number already exists'}
@@ -160,7 +167,9 @@ class StudentSerializer(serializers.ModelSerializer):
 
     def validate_clinic_number(self, clinic_number):
         if clinic_number:
-            student = Student.objects.filter(clinic_number=clinic_number).first()
+            student = Student.objects.filter(
+                clinic_number=clinic_number).exclude(
+                id=self.context.get('id')).first()
             if student:
                 raise serializers.ValidationError(
                     {'clinic_number': 'Clinic number already exists'}
@@ -187,7 +196,7 @@ class ResetPasswordSerializer(serializers.Serializer):
     def validate(self, data):
         if data.get('otp'):
             otp = data.get('otp')
-            cached_otp = get_from_redis(f'RESET: {data.get("email")}')
+            cached_otp = get_from_redis(f'RESET: {data.get("email")}', None)
             if otp != cached_otp:
                 raise serializers.ValidationError(
                     {'otp': 'OTP code is invalid or expired'}

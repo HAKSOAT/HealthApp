@@ -68,11 +68,11 @@ class ConfirmStudentViewset(viewsets.ViewSet):
         data = request.data
         student = Student.objects.filter(id=pk).first()
         if not student:
-            return format_response(error='Student does not have an account',
+            return format_response(error='Account does not exist',
                                    status=HTTP_400_BAD_REQUEST)
 
         if student.is_confirmed:
-            return format_response(error='Student\'s account is already confirmed',
+            return format_response(error='Account is already confirmed',
                                    status=HTTP_400_BAD_REQUEST)
 
         context = {'email': student.email}
@@ -82,9 +82,9 @@ class ConfirmStudentViewset(viewsets.ViewSet):
                                    status=HTTP_400_BAD_REQUEST)
 
         if not data.get('otp', None):
-            otp = get_from_redis(f'CONFIRM: {student.email}')
+            otp = get_from_redis(f'CONFIRM: {student.email}', None)
             if otp:
-                return format_response(error='OTP already generated. Check email and specify otp key with its value',
+                return format_response(error='OTP already generated. Check your email.',
                                        status=HTTP_400_BAD_REQUEST)
             otp = generate_otp()
             save_in_redis(f'CONFIRM: {student.email}', otp, 60 * 5)
@@ -162,10 +162,11 @@ class LogoutView(APIView):
 
 class StudentView(APIView):
     """ View for student's information """
+    serializer_class = StudentSerializer
 
     def get(self, request):
         student = request.user
-        serializer = StudentSerializer(student)
+        serializer = self.serializer_class(student)
         data = serializer.data
         data.pop('password')
         return format_response(data=data,
@@ -177,7 +178,7 @@ class StudentView(APIView):
     def patch(self, request):
         data = request.data
         student = request.user
-        serializer = StudentSerializer(student, data=data,
+        serializer = self.serializer_class(student, data=data,
                                        partial=True, context={'id': student.id})
 
         if not serializer.is_valid():
@@ -209,7 +210,7 @@ class ResetPasswordView(APIView):
 
         student = Student.objects.filter(email=data.get('email')).first()
         if not data.get('otp', None):
-            otp = get_from_redis(f'RESET: {student.email}')
+            otp = get_from_redis(f'RESET: {student.email}', None)
             if otp:
                 return format_response(error='OTP already generated. Check email and specify otp key with its value',
                                        status=HTTP_400_BAD_REQUEST)

@@ -20,8 +20,7 @@ class Worker(AbstractBaseUser):
                             default=Roles.worker)
 
 
-class IoT(AbstractBaseUser):
-    USERNAME_FIELD = 'id'
+class IoT(models.Model):
     id = models.CharField(
         max_length=LENGTH_OF_ID, primary_key=True,
         default=generate_id, editable=False)

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'students.apps.StudentsConfig',
     'healthcentre.apps.HealthcentreConfig',
+    'firstaid.apps.FirstaidConfig',
     'drf_yasg'
 ]
 

@@ -32,7 +32,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['healfb.herokuapp.com']
 
@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'students.apps.StudentsConfig',
     'healthcentre.apps.HealthcentreConfig',
+    'firstaid.apps.FirstaidConfig',
     'drf_yasg'
 ]
 
