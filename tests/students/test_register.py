@@ -12,7 +12,7 @@ class TestAccountRegistration():
         mock_send_mail.return_value = True
         response = client.post(
             self.url, data=min_user_data, format='json')
-        assert response.status_code == 200
+        assert response.status_code == 201
 
     def test_existing(self, client, min_user_data, min_user):
         response = client.post(

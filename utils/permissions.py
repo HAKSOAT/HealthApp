@@ -18,7 +18,7 @@ class IsTokenBlackListed(permissions.BasePermission):
         if is_blacklisted_token:
             raise exceptions.PermissionDenied(
                 {'success': False,
-                 'error': 'Session has expired. Please login again.',
+                 'error': 'Session has expired. Kindly login again.',
                  'status': HTTP_400_BAD_REQUEST})
 
         return True

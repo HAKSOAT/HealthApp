@@ -3,7 +3,7 @@ import os
 import jwt
 from rest_framework import viewsets
 from rest_framework.views import APIView
-from rest_framework.status import HTTP_400_BAD_REQUEST
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
 from django.core.mail import send_mail
 from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
@@ -28,17 +28,19 @@ class RegisterStudentViewset(viewsets.ViewSet):
     permission_classes = ()
     authentication_classes = ()
 
-    @swagger_auto_schema(request_body=RegisterStudentSerializer, query_serializer=RegisterStudentSerializer)
+    @swagger_auto_schema(request_body=RegisterStudentSerializer,
+                         query_serializer=RegisterStudentSerializer)
     def create(self, request):
         data = request.data
         serializer = RegisterStudentSerializer(data=data)
 
         if not serializer.is_valid():
-            return format_response(error=serializer.errors.get('errors', serializer.errors),
-                                   status=HTTP_400_BAD_REQUEST)
+            return format_response(
+                error=serializer.errors.get('errors', serializer.errors),
+                status=HTTP_400_BAD_REQUEST)
 
-        student = serializer.save()
         otp = generate_otp()
+        save_in_redis(f'CONFIRM: {data["email"]}', otp, 60 * 4.9)
         send_mail(
             'Confirm HealthApp Account',
             'The OTP code is {}.\n Valid for 5 minutes.'.format(otp),
@@ -46,12 +48,14 @@ class RegisterStudentViewset(viewsets.ViewSet):
             [data['email']],
             fail_silently=False
         )
-        save_in_redis(f'CONFIRM: {data["email"]}', otp, 60*5)
+        student = serializer.save()
         response_data = {'id': student.id}
         return format_response(
             data=response_data,
             message='Successfully created an account. '
-                    'Check email to get OTP and proceed to confirm account.')
+                    'Check email to get OTP and proceed to confirm account.',
+            status=HTTP_201_CREATED
+        )
 
 
 class ConfirmStudentViewset(viewsets.ViewSet):
@@ -59,10 +63,12 @@ class ConfirmStudentViewset(viewsets.ViewSet):
     permission_classes = ()
     authentication_classes = ()
 
-    @swagger_auto_schema(request_body=ConfirmStudentSerializer, query_serializer=ConfirmStudentSerializer,
-                         operation_description='Confirms a student\'s account. To request OTP, '
-                                               'the otp field is not needed. However, it is '
-                                               'needed to provide OTP for account confirmation.'
+    @swagger_auto_schema(request_body=ConfirmStudentSerializer,
+                         query_serializer=ConfirmStudentSerializer,
+                         operation_description=
+                         'Confirms a student\'s account. To request OTP, '
+                         'the otp field is not needed. However, it is '
+                         'needed to provide OTP for account confirmation.'
                          )
     def partial_update(self, request, pk):
         data = request.data
@@ -76,18 +82,21 @@ class ConfirmStudentViewset(viewsets.ViewSet):
                                    status=HTTP_400_BAD_REQUEST)
 
         context = {'email': student.email}
-        serializer = ConfirmStudentSerializer(student, data=data, context=context)
+        serializer = ConfirmStudentSerializer(
+            student, data=data, context=context)
         if not serializer.is_valid():
-            return format_response(error=serializer.errors.get('errors', serializer.errors),
-                                   status=HTTP_400_BAD_REQUEST)
+            return format_response(
+                error=serializer.errors.get('errors', serializer.errors),
+                status=HTTP_400_BAD_REQUEST)
 
         if not data.get('otp', None):
             otp = get_from_redis(f'CONFIRM: {student.email}', None)
             if otp:
-                return format_response(error='OTP already generated. Check your email.',
-                                       status=HTTP_400_BAD_REQUEST)
+                return format_response(
+                    error='OTP already generated. Check your email.',
+                    status=HTTP_400_BAD_REQUEST)
             otp = generate_otp()
-            save_in_redis(f'CONFIRM: {student.email}', otp, 60 * 5)
+            save_in_redis(f'CONFIRM: {student.email}', otp, 60 * 4.9)
             send_mail(
                 'Confirm HealthApp Account',
                 'The OTP code is {}.\n Valid for 5 minutes.'.format(otp),
@@ -95,7 +104,8 @@ class ConfirmStudentViewset(viewsets.ViewSet):
                 [student.email],
                 fail_silently=False
             )
-            return format_response(message='Successfully generated Account Confirmation OTP')
+            return format_response(
+                message='Successfully generated Account Confirmation OTP')
 
         serializer.save()
         delete_from_redis(f'CONFIRM: {student.email}')
@@ -107,7 +117,8 @@ class LoginView(APIView):
     permission_classes = ()
     authentication_classes = ()
 
-    @swagger_auto_schema(request_body=LoginSerializer, query_serializer=LoginSerializer,
+    @swagger_auto_schema(request_body=LoginSerializer,
+                         query_serializer=LoginSerializer,
                          operation_description='Logs in a user'
                          )
     def post(self, request):
@@ -115,8 +126,9 @@ class LoginView(APIView):
         context = {'user_type': request._request.path_info.split('/')[3]}
         serializer = LoginSerializer(data=data, context=context)
         if not serializer.is_valid():
-            return format_response(error=serializer.errors.get('errors', serializer.errors),
-                                   status=HTTP_400_BAD_REQUEST)
+            return format_response(
+                error=serializer.errors.get('errors', serializer.errors),
+                status=HTTP_400_BAD_REQUEST)
 
         token = jwt.encode({
             'uid': serializer.validated_data['user'].id,
@@ -172,9 +184,12 @@ class StudentView(APIView):
         return format_response(data=data,
                                message='Retrieved student details')
 
-    @swagger_auto_schema(request_body=StudentSerializer, query_serializer=StudentSerializer,
-                         operation_description='Update student\'s values. To update password, '
-                                               'ensure the password and new_password fields are filled.')
+    @swagger_auto_schema(request_body=StudentSerializer,
+                         query_serializer=StudentSerializer,
+                         operation_description=
+                         'Update student\'s values. To update password, '
+                         'ensure the password and '
+                         'new_password fields are filled.')
     def patch(self, request):
         data = request.data
         student = request.user
@@ -196,26 +211,31 @@ class ResetPasswordView(APIView):
     permission_classes = ()
     authentication_classes = ()
 
-    @swagger_auto_schema(request_body=ResetPasswordSerializer, query_serializer=ResetPasswordSerializer,
-                         operation_description='Reset student\'s password. To request OTP, '
-                                               'the otp field is not needed. However, it is '
-                                               'needed to provide OTP for password reset.')
+    @swagger_auto_schema(request_body=ResetPasswordSerializer,
+                         query_serializer=ResetPasswordSerializer,
+                         operation_description=
+                         'Reset student\'s password. To request OTP, ' 
+                         'the otp field is not needed. However, it is ' 
+                         'needed to provide OTP for password reset.')
     def patch(self, request):
         data = request.data
 
         serializer = ResetPasswordSerializer(data=data)
         if not serializer.is_valid():
-            return format_response(error=serializer.errors.get('errors', serializer.errors),
-                                   status=HTTP_400_BAD_REQUEST)
+            return format_response(
+                error=serializer.errors.get('errors', serializer.errors),
+                status=HTTP_400_BAD_REQUEST)
 
         student = Student.objects.filter(email=data.get('email')).first()
         if not data.get('otp', None):
             otp = get_from_redis(f'RESET: {student.email}', None)
             if otp:
-                return format_response(error='OTP already generated. Check email and specify otp key with its value',
-                                       status=HTTP_400_BAD_REQUEST)
+                return format_response(
+                    error='OTP already generated. '
+                          'Check email and specify otp key with its value',
+                    status=HTTP_400_BAD_REQUEST)
             otp = generate_otp()
-            save_in_redis(f'RESET: {student.email}', otp, 60 * 5)
+            save_in_redis(f'RESET: {student.email}', otp, 60 * 4.9)
             send_mail(
                 'Reset HealthApp Password',
                 'The OTP code is {}.\n Valid for 5 minutes.'.format(otp),
@@ -223,7 +243,8 @@ class ResetPasswordView(APIView):
                 [student.email],
                 fail_silently=False
             )
-            return format_response(message='Successfully generated Password Reset OTP')
+            return format_response(
+                message='Successfully generated Password Reset OTP')
 
         serializer.update(student, serializer.data)
         Token.objects.filter(user_id=student.id).update(is_blacklisted=True)
@@ -234,7 +255,8 @@ class ResetPasswordView(APIView):
 class PingViewset(viewsets.ViewSet):
     """ Viewset for Pings """
 
-    @swagger_auto_schema(request_body=PingViewsetSerializer, query_serializer=PingViewsetSerializer,
+    @swagger_auto_schema(request_body=PingViewsetSerializer,
+                         query_serializer=PingViewsetSerializer,
                          operation_description='Send a ping.')
     def create(self, request):
         data = request.data
@@ -246,4 +268,5 @@ class PingViewset(viewsets.ViewSet):
                 error=serializer.errors.get('errors', serializer.errors),
                 status=HTTP_400_BAD_REQUEST)
         serializer.save()
-        return format_response(message='Successfully sent a ping')
+        return format_response(message='Successfully sent a ping',
+                               status=HTTP_201_CREATED)

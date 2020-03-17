@@ -19,9 +19,9 @@ class TestAccountStudent():
         assert 'password' not in response.data['data'].keys()
 
     def test_update(self, client, min_user_data, min_user, auth_header):
-        new_name = 'CHANGED_HAKS'
+        new_name = 'CHANGEDHAKS'
         new_password = 'more_money'
-        new_matric_number = '2000test'
+        new_matric_number = '20200000'
         data = {'first_name': new_name,
                 'last_name': new_name,
                 'matric_number': new_matric_number,

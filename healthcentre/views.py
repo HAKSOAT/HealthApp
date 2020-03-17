@@ -20,7 +20,7 @@ class StudentView(mixins.RetrieveModelMixin,
         student = Student.objects.filter(id=pk).first()
         if not student:
             return format_response(success=False,
-                                   message='Student not found',
+                                   message='Student account does not exist',
                                    status=HTTP_404_NOT_FOUND)
 
         serializer = self.serializer_class(student)
@@ -41,7 +41,7 @@ class PingViewset(mixins.RetrieveModelMixin,
         ping = Ping.objects.filter(id=pk).first()
         if not ping:
             return format_response(success=False,
-                                   message='Ping not found',
+                                   message='Ping does not exist',
                                    status=HTTP_404_NOT_FOUND)
 
         serializer = PingViewsetSerializer(ping)
@@ -66,7 +66,7 @@ class IoTPingViewset(mixins.ListModelMixin, viewsets.GenericViewSet):
     def list(self, request):
         last_check = get_from_redis('IOT', timezone.now())
         ping = Ping.objects.filter(created_at__gt=last_check).first()
-        save_in_redis('IOT', timezone.now(), 60 * 5)
+        save_in_redis('IOT', timezone.now(), 60 * 10)
         if ping:
             return format_response(message='New ping found')
         else:
