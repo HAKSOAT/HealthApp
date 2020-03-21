@@ -32,7 +32,7 @@ class JSONWebTokenAuthentication(BaseAuthentication):
         except jwt.ExpiredSignatureError:
             raise exceptions.AuthenticationFailed(
                 {'error': 'Authentication Failed',
-                 'message': 'Token has expired'})
+                 'message': 'Session has expired. Kindly login again.'})
 
         if not user:
             raise exceptions.AuthenticationFailed(

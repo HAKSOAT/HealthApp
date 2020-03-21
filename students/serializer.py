@@ -7,26 +7,31 @@ from students.utils.helpers import get_student_fields, check_password_change
 from utils.helpers import get_from_redis
 from students.utils.enums import Departments
 from healthcentre.models import Worker
+from students.utils.serializer_checks import StudentChecker
 
 
 class RegisterStudentSerializer(serializers.Serializer):
-    first_name = serializers.CharField(
-        min_length=2, allow_null=False, required=True)
-    last_name = serializers.CharField(
-        min_length=2, allow_null=False, required=True)
-    email = serializers.EmailField(required=True, allow_null=False)
-    password = serializers.CharField(required=True, allow_null=False)
+    first_name = serializers.CharField(default='')
+    last_name = serializers.CharField(default='')
+    email = serializers.CharField(default='')
+    password = serializers.CharField(default='')
 
     class Meta:
         model = Student
 
+    def validate_first_name(self, first_name):
+        first_name = StudentChecker.check_name(first_name, 'First name')
+        return first_name
+
+    def validate_last_name(self, last_name):
+        last_name = StudentChecker.check_name(last_name, 'Last name')
+        return last_name
+
     def validate_email(self, email):
+        email = StudentChecker.check_email(email)
         student = Student.objects.filter(email=email).first()
         if student:
-            raise serializers.ValidationError(
-                {'email': 'Email already exists'}
-            )
-
+            raise serializers.ValidationError('Email already exists')
         return email
 
     def create(self, data):
@@ -38,20 +43,18 @@ class RegisterStudentSerializer(serializers.Serializer):
 
 
 class ConfirmStudentSerializer(serializers.Serializer):
-    otp = serializers.CharField(min_length=LENGTH_OF_OTP,
-                                max_length=LENGTH_OF_OTP, required=False)
+    otp = serializers.CharField(default='')
 
-    def validate(self, data):
-        if data.get('otp'):
-            otp = data.get('otp')
+    def validate_otp(self, otp):
+        if otp:
             cached_otp = get_from_redis(
-                f'CONFIRM: {self.context.get("email")}')
+                f'CONFIRM: {self.context.get("email")}', None)
             if otp != cached_otp:
                 raise serializers.ValidationError(
-                    {'otp': 'OTP code is invalid or expired'}
+                    'OTP is invalid or expired'
                 )
 
-        return data
+        return otp
 
     def update(self, student, *args):
         student.is_confirmed = True
@@ -60,8 +63,8 @@ class ConfirmStudentSerializer(serializers.Serializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.CharField(allow_null=False, required=True)
-    password = serializers.CharField(allow_null=False, required=True)
+    email = serializers.CharField(default='')
+    password = serializers.CharField(default='')
 
     def validate(self, data):
         if self.context.get('user_type') == 'student':
@@ -93,26 +96,16 @@ class LoginSerializer(serializers.Serializer):
 
 
 class StudentSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(
-        min_length=2, allow_null=False, required=True)
-    last_name = serializers.CharField(
-        min_length=2, allow_null=False, required=True)
-    email = serializers.EmailField(
-        required=True, allow_null=False)
-    password = serializers.CharField(
-        required=True, allow_null=False)
-    mobile_number = serializers.CharField(
-        min_length=11, max_length=11, allow_null=False)
-    matric_number = serializers.CharField(
-        min_length=8, max_length=8, allow_null=False)
-    clinic_number = serializers.CharField(
-        min_length=8, required=False)
-    image = serializers.URLField(
-        required=False)
-    department = serializers.ChoiceField(
-        choices=[dpt.value for dpt in Departments], required=False)
-    new_password = serializers.CharField(
-        required=False, allow_null=False)
+    first_name = serializers.CharField(default='')
+    last_name = serializers.CharField(default='')
+    email = serializers.CharField(default='')
+    password = serializers.CharField(default='')
+    mobile_number = serializers.CharField(default='')
+    matric_number = serializers.CharField(default='')
+    clinic_number = serializers.CharField(default='')
+    image = serializers.CharField(default='')
+    department = serializers.CharField(default='')
+    new_password = serializers.CharField(default='')
 
     class Meta:
         model = Student
@@ -131,42 +124,67 @@ class StudentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(password_errors)
         return data
 
+    def validate_first_name(self, first_name):
+        if first_name:
+            first_name = StudentChecker.check_name(first_name, 'First name')
+        return first_name
+
+    def validate_last_name(self, last_name):
+        if last_name:
+            last_name = StudentChecker.check_name(last_name, 'First name')
+        return last_name
+
     def validate_email(self, email):
-        student = Student.objects.filter(email=email).first()
-        if student:
-            raise serializers.ValidationError(
-                {'email': 'Email already exists'}
-            )
+        if email:
+            email = StudentChecker.check_email(email)
+            student = Student.objects.filter(email=email).first()
+            if student:
+                raise serializers.ValidationError('Email already exists')
 
         return email
 
     def validate_matric_number(self, matric_number):
-        student = Student.objects.filter(matric_number=matric_number).first()
-        if student:
-            raise serializers.ValidationError(
-                {'matric_number': 'Matric number already exists'}
-            )
+        if matric_number:
+            matric_number = StudentChecker.check_matric_number(matric_number)
+            student = Student.objects.filter(
+                matric_number=matric_number).exclude(
+                id=self.context.get('id')).first()
+            if student:
+                raise serializers.ValidationError(
+                    'Matric number already exists')
 
         return matric_number
 
     def validate_mobile_number(self, mobile_number):
-        student = Student.objects.filter(mobile_number=mobile_number).first()
-        if student:
-            raise serializers.ValidationError(
-                {'mobile_number': 'Mobile number already exists'}
-            )
+        if mobile_number:
+            mobile_number = StudentChecker.check_mobile_number(mobile_number)
+            student = Student.objects.filter(
+                mobile_number=mobile_number).exclude(
+                id=self.context.get('id')).first()
+            if student:
+                raise serializers.ValidationError(
+                    'Mobile number already exists'
+                )
 
         return mobile_number
 
     def validate_clinic_number(self, clinic_number):
         if clinic_number:
-            student = Student.objects.filter(clinic_number=clinic_number).first()
+            clinic_number = StudentChecker.check_clinic_number(clinic_number)
+            student = Student.objects.filter(
+                clinic_number=clinic_number).exclude(
+                id=self.context.get('id')).first()
             if student:
                 raise serializers.ValidationError(
-                    {'clinic_number': 'Clinic number already exists'}
+                    'Clinic number already exists'
                 )
 
         return clinic_number
+
+    def validate_department(self, department):
+        if department:
+            department = StudentChecker.check_department_number(department)
+        return department
 
     def update(self, student, validated_data):
         if validated_data.get('new_password'):
@@ -179,15 +197,15 @@ class StudentSerializer(serializers.ModelSerializer):
 
 
 class ResetPasswordSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
-    otp = serializers.CharField(min_length=LENGTH_OF_OTP, required=False)
-    password = serializers.CharField(required=False)
-    password_again = serializers.CharField(required=False)
+    email = serializers.CharField(default='')
+    otp = serializers.CharField(default='')
+    password = serializers.CharField(default='')
+    password_again = serializers.CharField(default='')
 
     def validate(self, data):
         if data.get('otp'):
             otp = data.get('otp')
-            cached_otp = get_from_redis(f'RESET: {data.get("email")}')
+            cached_otp = get_from_redis(f'RESET: {data.get("email")}', None)
             if otp != cached_otp:
                 raise serializers.ValidationError(
                     {'otp': 'OTP code is invalid or expired'}
@@ -197,32 +215,31 @@ class ResetPasswordSerializer(serializers.Serializer):
 
         if not data.get('password') and data.get('password_again'):
             raise serializers.ValidationError(
-                {'password': 'This value can\'t be null since password_again was provided'}
+                {'password': 'Password is required'}
             )
 
         if not data.get('password_again') and data.get('password'):
             raise serializers.ValidationError(
-                {'password_again': 'This value can\'t be null since password was provided'}
+                {'password_again': 'Confirmation password is required'}
             )
 
         if data.get('password') and data.get('password_again'):
             if data.get('password') != data.get('password_again'):
                 raise serializers.ValidationError(
-                    {'password': 'password and password_again fields must have the same values'}
+                    {'password': 'Password and confirmation password'
+                                 ' should be the same'}
                 )
 
         return data
 
     def validate_email(self, email):
+        email = StudentChecker.check_email(email)
         student = Student.objects.filter(email=email).first()
         if not student:
             raise serializers.ValidationError(
-                {'email': 'Student does not have an account'}
-            )
+                'Account does not exist')
         if not student.is_confirmed:
-            raise serializers.ValidationError(
-                {'email': 'Account is not yet confirmed'}
-            )
+            raise serializers.ValidationError('Account is not yet confirmed')
         return student
 
     def update(self, student, data):
@@ -232,24 +249,37 @@ class ResetPasswordSerializer(serializers.Serializer):
 
 
 class PingViewsetSerializer(serializers.Serializer):
-    message = serializers.CharField(max_length=255, allow_null=False)
-    location = serializers.CharField(required=False)
+    message = serializers.CharField(default='')
+    location = serializers.CharField(default='')
 
     def validate(self, data):
         errors = {}
         student = Student.objects.filter(id=self.context.get('id')).first()
         if not student.matric_number:
             errors['matric_number'] = \
-                'Value must be set before ping works'
+                'You can only send ping after adding matric number to profile'
         if not student.clinic_number:
             errors['clinic_number'] = \
-                'Value must be set before ping works'
+                'You can only send ping after adding clinic number to profile'
         if not student.mobile_number:
             errors['mobile_number'] = \
-                'Value must be set before ping works'
+                'You can only send ping after adding mobile number to profile'
         if errors:
             raise serializers.ValidationError(errors)
         return data
+
+    def validate_message(self, message):
+        max_message_length = 255
+        min_message_length = 10
+        if len(message) < min_message_length:
+            raise serializers.ValidationError(
+                'Message has to be more than 10 characters'
+            )
+        elif len(message) > max_message_length:
+            raise serializers.ValidationError(
+                'Message has to be less than 255 characters'
+            )
+        return message
 
     def create(self, validated_data):
         student = Student.objects.filter(id=self.context.get('id')).first()

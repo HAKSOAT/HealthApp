@@ -26,7 +26,7 @@ class TestAccountConfirmation:
         url = f'{self.url}/{id}'
         response = client.patch(url, format='json')
         assert response.status_code == 400
-        assert response.data['error'] == 'Student does not have an account'
+        assert response.data['error'] == 'Account does not exist'
 
     def test_account_confirmed(self, client, min_user):
         id = min_user.id
@@ -34,7 +34,7 @@ class TestAccountConfirmation:
         response = client.patch(url, format='json')
         assert response.status_code == 400
         assert response.data['error'] == \
-               'Student\'s account is already confirmed'
+               'Account is already confirmed'
 
     @patch('students.serializer.get_from_redis')
     def test_invalid_otp(self, get_redis, client, min_user):

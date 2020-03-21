@@ -11,6 +11,8 @@ class Student(AbstractBaseUser):
     id = models.CharField(
         max_length=LENGTH_OF_ID, primary_key=True,
         default=generate_id, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     first_name = models.CharField(max_length=100, null=False, blank=False)
     last_name = models.CharField(max_length=100, null=False, blank=False)
     password = models.CharField(max_length=100, null=False)
