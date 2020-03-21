@@ -53,7 +53,13 @@ class PingViewset(mixins.RetrieveModelMixin,
     @swagger_auto_schema(query_serializer=PingViewsetSerializer,
                          operation_description='View all pings')
     def list(self, request):
-        pings = Ping.objects.all()
+        data = request.data
+        student_id = data.get('student', None)
+
+        if student_id:
+            pings = Ping.objects.filter(student__id=student_id)
+        else:
+            pings = Ping.objects.all()
         serializer = PingViewsetSerializer(pings, many=True)
         return format_response(data=serializer.data,
                                message='Successfully retrieved all Pings')

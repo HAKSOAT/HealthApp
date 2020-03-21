@@ -227,6 +227,16 @@ class ResetPasswordView(APIView):
                 status=HTTP_400_BAD_REQUEST)
 
         student = Student.objects.filter(email=data.get('email')).first()
+        if not student:
+            return format_response(
+                error='Account does not exist',
+                status=HTTP_400_BAD_REQUEST)
+
+        if not student.is_confirmed:
+            return format_response(
+                error='Account is not yet confirmed',
+                status=HTTP_400_BAD_REQUEST)
+
         if not data.get('otp', None):
             otp = get_from_redis(f'RESET: {student.email}', None)
             if otp:
