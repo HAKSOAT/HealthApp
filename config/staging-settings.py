@@ -185,3 +185,15 @@ REST_FRAMEWORK = {
     'DATETIME_FORMAT': "%Y-%m-%dT%H:%M:%S.%fZ",
     'DATETIME_INPUT_FORMATS': ['%Y-%m-%d %H:%M:%S', ]
 }
+
+ASGI_APPLICATION = 'config.routing.application'
+
+# Redis for Django Channels
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [os.environ.get('REDISTOGO_URL', 'redis://localhost:6959')],
+        },
+    },
+}
