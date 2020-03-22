@@ -21,6 +21,7 @@ from utils.helpers import format_response, save_in_redis, get_from_redis, \
     delete_from_redis
 from students.utils.generate import generate_otp
 from students.models import Student, Token
+from healthcentre.signals import ping_signal
 
 
 class RegisterStudentViewset(viewsets.ViewSet):
@@ -219,13 +220,12 @@ class ResetPasswordView(APIView):
                          'needed to provide OTP for password reset.')
     def patch(self, request):
         data = request.data
-
         serializer = ResetPasswordSerializer(data=data)
         if not serializer.is_valid():
             return format_response(
                 error=serializer.errors.get('errors', serializer.errors),
                 status=HTTP_400_BAD_REQUEST)
-
+        print('HEre')
         student = Student.objects.filter(email=data.get('email')).first()
         if not student:
             return format_response(
@@ -244,8 +244,8 @@ class ResetPasswordView(APIView):
                     error='OTP already generated. '
                           'Check email and specify otp key with its value',
                     status=HTTP_400_BAD_REQUEST)
+
             otp = generate_otp()
-            save_in_redis(f'RESET: {student.email}', otp, 60 * 4.9)
             send_mail(
                 'Reset HealthApp Password',
                 'The OTP code is {}.\n Valid for 5 minutes.'.format(otp),
@@ -253,6 +253,8 @@ class ResetPasswordView(APIView):
                 [student.email],
                 fail_silently=False
             )
+            print(student.email)
+            save_in_redis(f'RESET: {student.email}', otp, 60 * 4.9)
             return format_response(
                 message='Successfully generated Password Reset OTP')
 
@@ -278,5 +280,7 @@ class PingViewset(viewsets.ViewSet):
                 error=serializer.errors.get('errors', serializer.errors),
                 status=HTTP_400_BAD_REQUEST)
         serializer.save()
-        return format_response(message='Successfully sent a ping',
+        ping_signal.send(sender=self.__class__, ping_data=serializer.data)
+        return format_response(data=serializer.data,
+                               message='Successfully sent a ping',
                                status=HTTP_201_CREATED)

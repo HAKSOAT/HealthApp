@@ -205,6 +205,8 @@ class ResetPasswordSerializer(serializers.Serializer):
     def validate(self, data):
         if data.get('otp'):
             otp = data.get('otp')
+            print(data)
+            print(data.get("email"))
             cached_otp = get_from_redis(f'RESET: {data.get("email")}', None)
             if otp != cached_otp:
                 raise serializers.ValidationError(
@@ -240,7 +242,7 @@ class ResetPasswordSerializer(serializers.Serializer):
                 'Account does not exist')
         if not student.is_confirmed:
             raise serializers.ValidationError('Account is not yet confirmed')
-        return student
+        return email
 
     def update(self, student, data):
         student.set_password(data.get('password'))
@@ -248,9 +250,13 @@ class ResetPasswordSerializer(serializers.Serializer):
         return student
 
 
-class PingViewsetSerializer(serializers.Serializer):
+class PingViewsetSerializer(serializers.ModelSerializer):
     message = serializers.CharField(default='')
     location = serializers.CharField(default='')
+
+    class Meta:
+        model = Ping
+        fields = ['id', 'message', 'location', 'created_at']
 
     def validate(self, data):
         errors = {}

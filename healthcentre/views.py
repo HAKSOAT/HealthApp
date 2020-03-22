@@ -79,3 +79,7 @@ class IoTPingViewset(mixins.ListModelMixin, viewsets.GenericViewSet):
             return format_response(success=False,
                                    message='No new ping found',
                                    status=HTTP_404_NOT_FOUND)
+
+
+def ws_index(request):
+    return format_response(message='Here')
