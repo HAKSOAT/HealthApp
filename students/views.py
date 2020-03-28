@@ -3,7 +3,8 @@ import os
 import jwt
 from rest_framework import viewsets
 from rest_framework.views import APIView
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED
+from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_201_CREATED, \
+    HTTP_404_NOT_FOUND
 from django.core.mail import send_mail
 from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
@@ -20,7 +21,7 @@ from students.serializer import (
 from utils.helpers import format_response, save_in_redis, get_from_redis, \
     delete_from_redis
 from students.utils.generate import generate_otp
-from students.models import Student, Token
+from students.models import Student, Token, Ping
 from healthcentre.signals import ping_signal
 
 
@@ -253,7 +254,6 @@ class ResetPasswordView(APIView):
                 [student.email],
                 fail_silently=False
             )
-            print(student.email)
             save_in_redis(f'RESET: {student.email}', otp, 60 * 4.9)
             return format_response(
                 message='Successfully generated Password Reset OTP')
@@ -284,3 +284,29 @@ class PingViewset(viewsets.ViewSet):
         return format_response(data=serializer.data,
                                message='Successfully sent a ping',
                                status=HTTP_201_CREATED)
+
+    @swagger_auto_schema(query_serializer=PingViewsetSerializer,
+                         operation_description='View a pin')
+    def retrieve(self, request, pk):
+        student = request.user
+
+        ping = Ping.objects.filter(id=pk, student__id=student.id).first()
+
+        if not ping:
+            return format_response(
+                error='Ping not found',
+                status=HTTP_404_NOT_FOUND)
+
+        serializer = PingViewsetSerializer(ping)
+        return format_response(data=serializer.data,
+                               message='Successfully retrieved ping')
+
+    @swagger_auto_schema(query_serializer=PingViewsetSerializer,
+                         operation_description='View all pings')
+    def list(self, request):
+        student = request.user
+
+        pings = Ping.objects.filter(student__id=student.id)
+        serializer = PingViewsetSerializer(pings, many=True)
+        return format_response(data=serializer.data,
+                               message='Successfully retrieved all Pings')
