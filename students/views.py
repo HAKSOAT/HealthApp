@@ -29,12 +29,16 @@ class RegisterStudentViewset(viewsets.ViewSet):
     """ Viewset for student registration """
     permission_classes = ()
     authentication_classes = ()
+    serializer_class = RegisterStudentSerializer
 
     @swagger_auto_schema(request_body=RegisterStudentSerializer,
-                         query_serializer=RegisterStudentSerializer)
+                         operation_description='Registers a student.\n\n'
+                                               'Returns the <b>id</b> of the '
+                                               'created user, to be used for'
+                                               'confirmation purposes.')
     def create(self, request):
         data = request.data
-        serializer = RegisterStudentSerializer(data=data)
+        serializer = self.serializer_class(data=data)
 
         if not serializer.is_valid():
             return format_response(
@@ -64,13 +68,15 @@ class ConfirmStudentViewset(viewsets.ViewSet):
     """ Viewset for student confirmation  """
     permission_classes = ()
     authentication_classes = ()
+    serializer_class = ConfirmStudentSerializer
 
     @swagger_auto_schema(request_body=ConfirmStudentSerializer,
-                         query_serializer=ConfirmStudentSerializer,
                          operation_description=
-                         'Confirms a student\'s account. To request OTP, '
-                         'the otp field is not needed. However, it is '
-                         'needed to provide OTP for account confirmation.'
+                         'Confirms a student\'s account.\n\n'
+                         'A request body with an <b>otp</b> key in it'
+                         ' is needed to confirm an account.\n'
+                         'Otherwise, it is not needed if the intention is '
+                         'only to receive an OTP.'
                          )
     def partial_update(self, request, pk):
         data = request.data
@@ -84,7 +90,7 @@ class ConfirmStudentViewset(viewsets.ViewSet):
                                    status=HTTP_400_BAD_REQUEST)
 
         context = {'email': student.email}
-        serializer = ConfirmStudentSerializer(
+        serializer = self.serializer_class(
             student, data=data, context=context)
         if not serializer.is_valid():
             return format_response(
@@ -118,15 +124,18 @@ class LoginView(APIView):
     """ Viewset for logging in """
     permission_classes = ()
     authentication_classes = ()
+    serializer_class = LoginSerializer
 
     @swagger_auto_schema(request_body=LoginSerializer,
-                         query_serializer=LoginSerializer,
-                         operation_description='Logs in a user'
+                         operation_description='Logs in a user.\n\n'
+                                               'For the healthcare admin, '
+                                               'the <b>email</b> key should '
+                                               'be the username.'
                          )
     def post(self, request):
         data = request.data
         context = {'user_type': request._request.path_info.split('/')[3]}
-        serializer = LoginSerializer(data=data, context=context)
+        serializer = self.serializer_class(data=data, context=context)
         if not serializer.is_valid():
             return format_response(
                 error=serializer.errors.get('errors', serializer.errors),
@@ -155,6 +164,7 @@ class LogoutView(APIView):
     """ View for user log out """
     permission_classes = ()
 
+    @swagger_auto_schema(operation_description='Logs out the current user')
     def post(self, request):
         user = request.user
         token = request.headers["authorization"].split()[1]
@@ -178,25 +188,26 @@ class StudentView(APIView):
     """ View for student's information """
     serializer_class = StudentSerializer
 
+    @swagger_auto_schema(operation_description=
+                         'Views the current student\'s profile')
     def get(self, request):
         student = request.user
         serializer = self.serializer_class(student)
         data = serializer.data
-        data.pop('password')
         return format_response(data=data,
                                message='Retrieved student details')
 
     @swagger_auto_schema(request_body=StudentSerializer,
-                         query_serializer=StudentSerializer,
                          operation_description=
-                         'Update student\'s values. To update password, '
-                         'ensure the password and '
-                         'new_password fields are filled.')
+                         'Updates the current student\'s profile.\n\n'
+                         'To update password, provide the <b>password</b> and'
+                         '<b>new_password</b> keys.')
     def patch(self, request):
         data = request.data
         student = request.user
-        serializer = self.serializer_class(student, data=data,
-                                       partial=True, context={'id': student.id})
+        serializer = self.serializer_class(
+            student, data=data,
+            partial=True, context={'id': student.id})
 
         if not serializer.is_valid():
             return format_response(error=serializer.errors.get('errors', serializer.errors),
@@ -212,21 +223,28 @@ class ResetPasswordView(APIView):
     """ View for resetting password """
     permission_classes = ()
     authentication_classes = ()
+    serializer_class = ResetPasswordSerializer
 
     @swagger_auto_schema(request_body=ResetPasswordSerializer,
-                         query_serializer=ResetPasswordSerializer,
                          operation_description=
-                         'Reset student\'s password. To request OTP, ' 
-                         'the otp field is not needed. However, it is ' 
-                         'needed to provide OTP for password reset.')
+                         'Resets a student\'s password.\n\n'
+                         'A request body is with <b>email</b> key only'
+                         ' is needed to request an OTP.\n\n'
+                         'Otherwise, the'
+                         '<ul>'
+                         '<li>email</li>'
+                         '<li>otp</li>'
+                         '<li>password</li>'
+                         '<li>password_again</li>'
+                         '</ul>\n\n'
+                         'keys are required to reset the password.')
     def patch(self, request):
         data = request.data
-        serializer = ResetPasswordSerializer(data=data)
+        serializer = self.serializer_class(data=data)
         if not serializer.is_valid():
             return format_response(
                 error=serializer.errors.get('errors', serializer.errors),
                 status=HTTP_400_BAD_REQUEST)
-        print('HEre')
         student = Student.objects.filter(email=data.get('email')).first()
         if not student:
             return format_response(
@@ -266,14 +284,14 @@ class ResetPasswordView(APIView):
 
 class PingViewset(viewsets.ViewSet):
     """ Viewset for Pings """
+    serializer_class = PingViewsetSerializer
 
     @swagger_auto_schema(request_body=PingViewsetSerializer,
-                         query_serializer=PingViewsetSerializer,
-                         operation_description='Send a ping.')
+                         operation_description='Sends a ping.')
     def create(self, request):
         data = request.data
         student = request.user
-        serializer = PingViewsetSerializer(data=data,
+        serializer = self.serializer_class(data=data,
                                            context={'id': student.id})
         if not serializer.is_valid():
             return format_response(
@@ -285,8 +303,7 @@ class PingViewset(viewsets.ViewSet):
                                message='Successfully sent a ping',
                                status=HTTP_201_CREATED)
 
-    @swagger_auto_schema(query_serializer=PingViewsetSerializer,
-                         operation_description='View a pin')
+    @swagger_auto_schema(operation_description='Views a ping')
     def retrieve(self, request, pk):
         student = request.user
 
@@ -297,16 +314,16 @@ class PingViewset(viewsets.ViewSet):
                 error='Ping not found',
                 status=HTTP_404_NOT_FOUND)
 
-        serializer = PingViewsetSerializer(ping)
+        serializer = self.serializer_class(ping)
         return format_response(data=serializer.data,
                                message='Successfully retrieved ping')
 
     @swagger_auto_schema(query_serializer=PingViewsetSerializer,
-                         operation_description='View all pings')
+                         operation_description='Views all pings')
     def list(self, request):
         student = request.user
 
         pings = Ping.objects.filter(student__id=student.id)
-        serializer = PingViewsetSerializer(pings, many=True)
+        serializer = self.serializer_class(pings, many=True)
         return format_response(data=serializer.data,
                                message='Successfully retrieved all Pings')
