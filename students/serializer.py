@@ -3,7 +3,7 @@ from django.contrib.auth.hashers import check_password
 
 from students.models import Student, Ping
 from students.utils.generate import LENGTH_OF_OTP
-from students.utils.helpers import get_student_fields, check_password_change
+from students.utils.helpers import check_password_change
 from utils.helpers import get_from_redis
 from students.utils.enums import Departments
 from healthcentre.models import Worker
@@ -101,21 +101,17 @@ class StudentSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(default='')
     last_name = serializers.CharField(default='')
     email = serializers.CharField(default='')
-    password = serializers.CharField(default='')
+    password = serializers.CharField(default='', write_only=True)
     mobile_number = serializers.CharField(default='')
     matric_number = serializers.CharField(default='')
     clinic_number = serializers.CharField(default='')
     image = serializers.CharField(default='')
     department = serializers.CharField(default='')
-    new_password = serializers.CharField(default='')
+    new_password = serializers.CharField(default='', write_only=True)
 
     class Meta:
         model = Student
-        student_fields = get_student_fields()
-        # The ModelSerializer requires new_password
-        # This is because of the new_password variable defined above
-        student_fields.append('new_password')
-        fields = student_fields
+        fields = '__all__'
 
     def validate(self, data):
         student = Student.objects.filter(id=self.context.get('id')).first()
@@ -258,6 +254,7 @@ class PingViewsetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ping
+        ref_name = 'StudentsPingViewsetSerializer'
         fields = ['id', 'message', 'location', 'created_at']
 
     def validate(self, data):

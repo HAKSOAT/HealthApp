@@ -16,6 +16,13 @@ class StudentView(mixins.RetrieveModelMixin,
                   viewsets.GenericViewSet):
     """ View for student's information """
     serializer_class = StudentSerializer
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Student.objects.none()
+
+    @swagger_auto_schema(
+        operation_description='Views a student\'s profile')
     def retrieve(self, request, pk):
         student = Student.objects.filter(id=pk).first()
         if not student:
@@ -25,33 +32,35 @@ class StudentView(mixins.RetrieveModelMixin,
 
         serializer = self.serializer_class(student)
         data = serializer.data
-        data.pop('password')
         return format_response(data=data,
-                               message='Successfully retrieved Student')
+                               message='Successfully retrieved'
+                                       ' student\'s profile')
 
 
 class PingViewset(mixins.RetrieveModelMixin,
                   mixins.ListModelMixin,
                   viewsets.GenericViewSet):
     """ Viewset for Pings """
+    serializer_class = PingViewsetSerializer
 
-    @swagger_auto_schema(query_serializer=PingViewsetSerializer,
-                         operation_description='View a ping.')
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Ping.objects.none()
+
+    @swagger_auto_schema(operation_description='Views a ping.')
     def retrieve(self, request, pk):
+        Ping.objects.filter(id=pk).update(is_read=True)
         ping = Ping.objects.filter(id=pk).first()
         if not ping:
             return format_response(success=False,
                                    message='Ping does not exist',
                                    status=HTTP_404_NOT_FOUND)
 
-        serializer = PingViewsetSerializer(ping)
-        ping.is_read = True
-        ping.save()
+        serializer = self.serializer_class(ping)
         return format_response(data=serializer.data,
                                message='Successfully retrieved Ping')
 
-    @swagger_auto_schema(query_serializer=PingViewsetSerializer,
-                         operation_description='View all pings')
+    @swagger_auto_schema(operation_description='Views all pings')
     def list(self, request):
         data = request.data
         student_id = data.get('student', None)
@@ -60,7 +69,7 @@ class PingViewset(mixins.RetrieveModelMixin,
             pings = Ping.objects.filter(student__id=student_id)
         else:
             pings = Ping.objects.all()
-        serializer = PingViewsetSerializer(pings, many=True)
+        serializer = self.serializer_class(pings, many=True)
         return format_response(data=serializer.data,
                                message='Successfully retrieved all Pings')
 
@@ -69,6 +78,7 @@ class IoTPingViewset(mixins.ListModelMixin, viewsets.GenericViewSet):
     authentication_classes = (APIKeyAuthentication, )
     permission_classes = ()
 
+    @swagger_auto_schema(auto_schema=None)
     def list(self, request):
         last_check = get_from_redis('IOT', timezone.now())
         ping = Ping.objects.filter(created_at__gt=last_check).first()
