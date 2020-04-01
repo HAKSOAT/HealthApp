@@ -13,7 +13,6 @@ class TestAccountLogin():
 
         response = client.post(
             self.url, data=data, content_type='application/json')
-        print(response.data)
         assert response.status_code == 200
 
     def test_no_account(self, client, min_user_data):
