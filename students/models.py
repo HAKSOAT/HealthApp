@@ -30,6 +30,9 @@ class Student(AbstractBaseUser):
         null=True)
     is_confirmed = models.BooleanField(default=False)
 
+    def __repr__(self):
+        return f'<{self.email}>'
+
 
 class Token(models.Model):
     id = models.CharField(
