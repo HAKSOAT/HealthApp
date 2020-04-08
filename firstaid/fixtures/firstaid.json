@@ -3,90 +3,90 @@
     "model": "firstaid.tip",
     "fields": {
       "ailment": "Hypoxia",
-      "symptoms": "Rapid breathing, difficulty speaking, headache, grey-blue skin.",
-      "causes": "Insufficient oxygen in the body tissue, choking, airway obstruction.",
+      "symptoms": "Rapid breathing. Difficulty speaking. Headache. Grey-blue skin.",
+      "causes": "Insufficient oxygen in the body tissue. Choking. Airway obstruction.",
       "dos": "Take steps to improve breathing such as coughing, do back blows if you know how to.",
-      "donts": "Avoid crowded areas, remove breathing obstacles."
+      "donts": "Visiting crowded areas."
     }
   },
 {
     "model": "firstaid.tip",
     "fields": {
       "ailment": "Fume inhalation",
-      "symptoms": "Headache, confusion, aggression, nausea and vomiting.",
-      "causes": "Smoke, Carbon Monoxide.",
-      "dos": "Leave area, put off source of fume.",
-      "donts": "Don't go into area with strong fume without protection."
+      "symptoms": "Headache. Confusion. Aggression. Nausea. Vomiting.",
+      "causes": "Smoke. Carbon Monoxide.",
+      "dos": "Leave area. Put off source of fume.",
+      "donts": "Going into area with strong fume without protection."
     }
   },
 {
     "model": "firstaid.tip",
     "fields": {
       "ailment": "Drowning",
-      "symptoms": "Gasping for air, vertically-positioned in water with little leg movement.",
+      "symptoms": "Gasping for air. Vertically-positioned in water with little leg movement.",
       "causes": "Inability to breathe due to blocking of air passages under water.",
-      "dos": "Rescue individual from water, do CPR if you know how to, do chest compressions, roll the individual to the side after rescue.",
-      "donts": "Only rescue if you have gear to avoid drowning too."
+      "dos": "Rescue individual from water. Do CPR if you know how to. Do chest compressions. Roll the individual to the side after rescue.",
+      "donts": "Rescuing without safety gear."
     }
   },
 {
     "model": "firstaid.tip",
     "fields": {
       "ailment": "Asthma",
-      "symptoms": "Difficulty breathing, coughing, grey-blue skin.",
+      "symptoms": "Difficulty breathing. Coughing. Grey-blue skin.",
       "causes": "Muscles of the air passages in the lungs go into spasm.",
-      "dos": "Take puffs from inhaler, sit down in a comfortable position, breathe deeply and slowly too.",
-      "donts": "Do not panic, avoid crowded areas, avoid dusty or smoke-filled places"
+      "dos": "Take puffs from inhaler. Sit down in a comfortable position. Breathe deeply and slowly too.",
+      "donts": "Panicking. Gathering around the victim. Going to dusty or smoke-filled places."
     }
   },
 {
     "model": "firstaid.tip",
     "fields": {
       "ailment": "Penetrating chest wound",
-      "symptoms": "Difficulty breathing, grey-blue skin, blood-stained coughs, blood bubbling out of wound.",
-      "causes": "Damage to the organs in the chest and the upper abdomen, air entering between the membranes that protect lungs to exert pressure on them.",
-      "dos": "Maintain breathing at all costs, keep individual calm, call the ambulance ASAP.",
-      "donts": "If the wound is not actively bleeding, it is important to leave it exposed without a dressing."
+      "symptoms": "Difficulty breathing. Grey-blue skin. Blood-stained coughs. Blood bubbling out of wound.",
+      "causes": "Damage to the organs in the chest and the upper abdomen. Air entering between the membranes that protect lungs to exert pressure on them.",
+      "dos": "Maintain breathing at all costs. Keep individual calm. Call the ambulance ASAP.",
+      "donts": "Dressing wound if not actively bleeding."
     }
   },
 {
     "model": "firstaid.tip",
     "fields": {
       "ailment": "Severe external bleeding",
-      "symptoms": "Blood gushing out visibly",
-      "causes": "Shock, deep cut, accidents",
-      "dos": "Control bleeding, minimise infection by covering wound with clean cloth, apply direct pressure over the wound with your fingers.",
-      "donts": "Do not allow eating or drinking because an anaesthetic may be needed"
+      "symptoms": "Blood gushing out visibly.",
+      "causes": "Severe shock or blow. Deep cut. Accidents.",
+      "dos": "Control bleeding. Minimise infection by covering wound with clean cloth. Apply direct pressure over the wound with your fingers.",
+      "donts": "Eating or drinking because an anaesthetic may be needed"
     }
   },
 {
     "model": "firstaid.tip",
     "fields": {
       "ailment": "Internal bleeding",
-      "symptoms": "Weak pulse, thirst, confusion, pale skin that may turn blue-grey, bleeding from mouth, nose, ear.",
-      "causes": "An injury, such as a fracture or a blow from a blunt object, an accident",
+      "symptoms": "Weak pulse. Thirst. Confusion. Pale skin that may turn blue-grey. Bleeding from mouth, nose, ear.",
+      "causes": "An injury, such as a fracture or a blow from a blunt object, an accident.",
       "dos": "Keep calm and call the health centre ASAP",
-      "donts": "Avoid assuming no bleeding means individual is okay"
+      "donts": "Assuming no bleeding means victim is okay."
     }
   },
 {
     "model": "firstaid.tip",
     "fields": {
       "ailment": "Crush injury",
-      "symptoms": "Fracture, swelling, internal bleeding, numbness at point of injury or below",
-      "causes": "Traffic, building site, motor accidents, etc.",
-      "dos": "Rescue victim from trapped position, control bleeding with a clean piece of cloth, call the health centre, monitor breathing and pulse, try to keep the victim awake.",
-      "donts": "Avoid hurting yourself in the process of lifting heavy object, avoid a crowd"
+      "symptoms": "Fracture. Swelling. Internal bleeding. Numbness at point of injury or below.",
+      "causes": "Traffic. Building site. Motor accidents, etc.",
+      "dos": "Rescue victim from trapped position. Control bleeding with a clean piece of cloth. Call the health centre. Monitor breathing and pulse. Try to keep the victim awake.",
+      "donts": "Hurting yourself in the process of lifting heavy object. Gathering around the victim."
     }
   },
 {
     "model": "firstaid.tip",
     "fields": {
       "ailment": "Blisters",
-      "symptoms": "Bubble of skin filled with clear fluid",
-      "causes": "Rubbing skin is repeatedly against an irritating surface or exposing to heat. The damaged area of skin leaks tissue fluid that collects under the top layer of the skin, forming a blister",
-      "dos": "Wash the area with clean water and rinse, cover blister with an adhesive dressing ensuring plaster is larger than the blister.",
-      "donts": "Do not burst a blister because it increases the risk of infection."
+      "symptoms": "Bubble of skin filled with clear fluid.",
+      "causes": "Rubbing skin repeatedly against an irritating surface or exposing to heat, the damaged area of skin leaks tissue fluid that collects under the top layer of the skin, forming a blister",
+      "dos": "Wash the area with clean water. Rinse and cover blister with an adhesive dressing ensuring plaster is larger than the blister.",
+      "donts": "Bursting a blister because it increases the risk of infection."
     }
   },
 {
@@ -97,6 +97,106 @@
       "causes": "Germs can contaminate wound due to poor treatment.",
       "dos": "Cover the wound with a sterile dressing or large clean, non-fluffy pad, and bandage it in place. Raise and support the injured part with a sling and/or bandages to reduce the swelling around the injury. Seek health centre attention when possible, to avoid tetanus infection.",
       "donts": "Avoid dirt by any means possible."
+    }
+  },
+{
+    "model": "firstaid.tip",
+    "fields": {
+      "ailment": "Substance in wound",
+      "symptoms": "Wound looks dirty. Visible sight of object in wound.",
+      "causes": "An open wound. Accidents.",
+      "dos": "Rinse wound with cold water. Remove object with tweezers. Seek medical advice on tetanus injections.",
+      "donts": "Forcing embedded substance out of wound. Covering wound with dirty gauze or cloth. Leaving wound open."
+    }
+  },
+{
+    "model": "firstaid.tip",
+    "fields": {
+      "ailment": "Head wound or injury",
+      "symptoms": "Bleeding from head or scalp. Unconsciousness. Headache. Skull fracture.",
+      "causes": "Violent head collision. Accidents.",
+      "dos": "Cover wound with sterile dressing. Apply pressure to control bleeding. Lay victim down with head and shoulders slightly raised. Call the health centre.",
+      "donts": "Gathering around the victim. Self-medication. Leaving wound open."
+    }
+  },
+{
+    "model": "firstaid.tip",
+    "fields": {
+      "ailment": "Eye wound",
+      "symptoms": "Eye pain. Partial or total loss of vision. Visual eye wound or bloodshot appearance.",
+      "causes": "Violent cuts or blows",
+      "dos": "Lay the victim down. Encourage them to reduce eye movements. Cover affected eye with sterile dressing. Call the health centre.",
+      "donts": "Attempting to remove anything from the eye. Rubbing the eyeball. Self-medication."
+    }
+  },
+{
+    "model": "firstaid.tip",
+    "fields": {
+      "ailment": "Ear bleeding",
+      "symptoms": "Ear ache. Partial or complete deafness. Presence of blood or watery fluid in the ear",
+      "causes": "Violent blow to the side of the head or ear. Ear infection.",
+      "dos": "Help casualty into a half-sitting position with head titling towards affected ear to drain blood or fluid. Hold sterile dressing gently inplace on affected ear. Contact the health centre.",
+      "donts": "Plugging the ear. Self-medication."
+    }
+  },
+{
+    "model": "firstaid.tip",
+    "fields": {
+      "ailment": "Nose bleeding",
+      "symptoms": "Visible bleeding from the nose.",
+      "causes": "Violent blow to the nose or head. Sneezing or nose picking.",
+      "dos": "Encourage victim not to speak or sniff. Sit casualty to sit and tilt their head forward. Encourage victim to breathe through the mouth and hold the soft part of nose till bleeding stops (usually about 10 minutes). Call the health centre ASAP if bleeding is severe and blood is watery.",
+      "donts": "Casualty tipping their head backward. Blowing the nose. Breathing from the nose instead of the mouth."
+    }
+  },
+{
+    "model": "firstaid.tip",
+    "fields": {
+      "ailment": "Mouth bleeding",
+      "symptoms": "Visible bleeding from the mouth.",
+      "causes": "Violent blow to the mouth. Cut to the tongue, lips or lining of the mouth.",
+      "dos": "Sit with head slightly tilted to injured side.",
+      "donts": "Inhalation of blood. Washing the mouth. Drinking hot substances within 12 hours of incident."
+    }
+  },
+{
+    "model": "firstaid.tip",
+    "fields": {
+      "ailment": "Finger injury",
+      "symptoms": "Severe finger pain. Bleeding. Visible deformity. Finger numbness.",
+      "causes": "Cuts. Grazes. Violent finger blows.",
+      "dos": "Press sterile dressing on the wound to avoid control bleeding. Raise and support affected finger. Contact health centre ASAP if finger is fractured.",
+      "donts": "Stressing affected finger. Putting finger in contaminated fluid."
+    }
+  },
+{
+    "model": "firstaid.tip",
+    "fields": {
+      "ailment": "Palm wound",
+      "symptoms": "Bleeding from palm.",
+      "causes": "Cuts. Grazes.",
+      "dos": "Press sterile dressing on palm. Raise and support the affected hand. Bandage palm in clenched form, leaving thumb free to check for blood circulation. Contact health centre.",
+      "donts": "Leaving wound open. Touching contaminated surfaces with wounded palm."
+    }
+  },
+{
+    "model": "firstaid.tip",
+    "fields": {
+      "ailment": "Abdominal wound",
+      "symptoms": "External abdominal bleeding. Visible abdominal content.",
+      "causes": "Stab wound. Gunshot. Crush injury.",
+      "dos": "Help victim lie down on a firm surface, on a blanket if available. Loosen any tight clothing, such as a belt or a shirt. Cover wound with a sterile dressing and hold it firmly. Contact the health centre ASAP.",
+      "donts": "Touching any protruding intestine. Gathering around the victim."
+    }
+  },
+{
+    "model": "firstaid.tip",
+    "fields": {
+      "ailment": "Vaginal bleeding",
+      "symptoms": "Visible bleeding from the vagina.",
+      "causes": "Menstrual bleeding. Miscarriage. Pregnancy. Sexual assault.",
+      "dos": "Allow the female privacy and give her a sanitary towel. Call the attention of another female to victim's situation if you are a male and a non-medical personnel. Take recommended dose of paracetamol or pain killer in case of period pains. If bleeding is severe or the cause is sexual assault, contact the health centre ASAP.",
+      "donts": "Gathering around the victim. Asking questions that makes victim feel vulnerable. Washing or using the toilet in case of sexual assault."
     }
   }
 ]

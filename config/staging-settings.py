@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
     'students.apps.StudentsConfig',
     'healthcentre.apps.HealthcentreConfig',
@@ -57,6 +58,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -197,3 +199,12 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_WHITELIST = [
+    'https://healfb.herokuapp.com', 'https://curefb.herokuapp.com'
+]
+CORS_ORIGIN_REGEX_WHITELIST = [
+    'https://healfb.herokuapp.com', 'https://curefb.herokuapp.com'
+]
