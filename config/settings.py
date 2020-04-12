@@ -188,7 +188,8 @@ REST_FRAMEWORK = {
         'rest_framework.schemas.coreapi.AutoSchema'
     ),
     'DATETIME_FORMAT': "%Y-%m-%dT%H:%M:%S.%fZ",
-    'DATETIME_INPUT_FORMATS': ['%Y-%m-%d %H:%M:%S', ]
+    'DATETIME_INPUT_FORMATS': ['%Y-%m-%d %H:%M:%S', ],
+    'EXCEPTION_HANDLER': 'utils.helpers.custom_exception_handler',
 }
 
 ASGI_APPLICATION = 'config.routing.application'

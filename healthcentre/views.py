@@ -2,24 +2,31 @@ from django.utils import timezone
 from rest_framework import mixins, viewsets
 from rest_framework.status import HTTP_404_NOT_FOUND
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import generics
 
 from healthcentre.serializer import (
     PingViewsetSerializer
 )
 from students.serializer import StudentSerializer
 from utils.helpers import format_response, save_in_redis, get_from_redis
+from utils.pagination import StandardPagination
 from students.models import Ping, Student
 from utils.authentication import APIKeyAuthentication
 
 
 class StudentView(mixins.RetrieveModelMixin,
+                  mixins.ListModelMixin,
                   viewsets.GenericViewSet):
     """ View for student's information """
     serializer_class = StudentSerializer
+    pagination_class = StandardPagination()
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return Student.objects.none()
+
+    def paginator(self):
+        return self.pagination_class
 
     @swagger_auto_schema(
         operation_description='Views a student\'s profile')
@@ -36,16 +43,32 @@ class StudentView(mixins.RetrieveModelMixin,
                                message='Successfully retrieved'
                                        ' student\'s profile')
 
+    def list(self, request):
+        students = Student.objects.all()
+        paginated_students = self.pagination_class.paginate_queryset(
+            queryset=students, request=request
+        )
+        serializer = self.serializer_class(paginated_students, many=True)
+        response = self.pagination_class.get_paginated_response(
+            serializer.data,
+            'Successfully retrieved students'
+        )
+        return response
+
 
 class PingViewset(mixins.RetrieveModelMixin,
                   mixins.ListModelMixin,
                   viewsets.GenericViewSet):
     """ Viewset for Pings """
     serializer_class = PingViewsetSerializer
+    pagination_class = StandardPagination()
 
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
-            return Ping.objects.none()
+            return Student.objects.none()
+
+    def paginator(self):
+        return self.pagination_class
 
     @swagger_auto_schema(operation_description='Views a ping.')
     def retrieve(self, request, pk):
@@ -69,9 +92,15 @@ class PingViewset(mixins.RetrieveModelMixin,
             pings = Ping.objects.filter(student__id=student_id)
         else:
             pings = Ping.objects.all()
-        serializer = self.serializer_class(pings, many=True)
-        return format_response(data=serializer.data,
-                               message='Successfully retrieved all Pings')
+        paginated_pings = self.pagination_class.paginate_queryset(
+            queryset=pings, request=request
+        )
+        serializer = self.serializer_class(paginated_pings, many=True)
+        response = self.pagination_class.get_paginated_response(
+            serializer.data,
+            'Successfully retrieved pings'
+        )
+        return response
 
 
 class IoTPingViewset(mixins.ListModelMixin, viewsets.GenericViewSet):

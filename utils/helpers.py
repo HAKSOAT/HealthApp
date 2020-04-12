@@ -1,5 +1,6 @@
 from django.core.cache import cache
 from rest_framework.response import Response
+from rest_framework.views import exception_handler
 
 
 def format_response(**kwargs):
@@ -38,3 +39,16 @@ def delete_from_redis(key):
         2. Deletes the data cached using key
     """
     cache.delete(key)
+
+
+def custom_exception_handler(exc, context):
+    response = exception_handler(exc, context)
+    if response is not None:
+        response.data['success'] = False
+        error_detail = response.data.get('detail', None)
+        if error_detail:
+            response.data['message'] = error_detail
+            del response.data['detail']
+        response.data['status'] = response.status_code
+
+    return response

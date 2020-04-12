@@ -32,6 +32,7 @@ class TestViewPings():
         response = client.get(
             self.url, data=data, content_type='application/json',
             **hc_worker_auth_header)
+        print(response.data)
         assert response.status_code == 200
         assert len(response.data['data']) == 1
 
@@ -49,5 +50,6 @@ class TestViewPings():
         response = client.get(
             self.url, content_type='application/json',
             **hc_worker_auth_header)
+        print(response.data)
         assert response.status_code == 200
         assert len(response.data['data']) == 1

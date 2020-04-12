@@ -13,7 +13,7 @@ class TestViewStudent():
             self.url + f'/{student_id}', content_type='application/json',
             **hc_worker_auth_header)
         assert response.status_code == 200
-        assert response.data['message'] == 'Successfully retrieved Student'
+        assert response.data['message'] == 'Successfully retrieved student\'s profile'
 
     def test_nonexistent_student(self, client, hc_worker_auth_header):
         student_id = 'fake'

@@ -20,6 +20,7 @@ from students.serializer import (
 )
 from utils.helpers import format_response, save_in_redis, get_from_redis, \
     delete_from_redis
+from utils.pagination import StandardPagination
 from students.utils.generate import generate_otp
 from students.models import Student, Token, Ping
 from healthcentre.signals import ping_signal
@@ -285,6 +286,14 @@ class ResetPasswordView(APIView):
 class PingViewset(viewsets.ViewSet):
     """ Viewset for Pings """
     serializer_class = PingViewsetSerializer
+    pagination_class = StandardPagination()
+
+    def get_queryset(self):
+        if getattr(self, 'swagger_fake_view', False):
+            return Student.objects.none()
+
+    def paginator(self):
+        return self.pagination_class
 
     @swagger_auto_schema(request_body=PingViewsetSerializer,
                          operation_description='Sends a ping.')
@@ -322,8 +331,12 @@ class PingViewset(viewsets.ViewSet):
                          operation_description='Views all pings')
     def list(self, request):
         student = request.user
-
         pings = Ping.objects.filter(student__id=student.id)
-        serializer = self.serializer_class(pings, many=True)
-        return format_response(data=serializer.data,
-                               message='Successfully retrieved all Pings')
+        paginated_pings = self.pagination_class.paginate_queryset(
+            queryset=pings, request=request
+        )
+        serializer = self.serializer_class(paginated_pings, many=True)
+        response = self.pagination_class.get_paginated_response(
+            serializer.data,
+            'Successfully retrieved pings')
+        return response

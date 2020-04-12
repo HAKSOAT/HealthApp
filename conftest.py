@@ -9,7 +9,7 @@ from healthcentre.models import Worker
 def min_user_data():
     """ Minimum needed data to create a student account """
     new_user = {
-        'email': 'test@test.com',
+        'email': 'test_min@test.com',
         'first_name': 'HAKS',
         'last_name': 'HAKS',
         'password': 'money'
@@ -20,7 +20,7 @@ def min_user_data():
 def max_user_data():
     """ Maximum possible data for a student account """
     new_user = {
-        'email': 'test@test.com',
+        'email': 'test_max@test.com',
         'first_name': 'HAKS',
         'last_name': 'HAKS',
         'password': 'money',

@@ -23,7 +23,7 @@ class TestViewFirstaidTip():
         tip_id = first_aid_fume_tip.id
         response = client.patch(self.url + f'/{tip_id}')
 
-        assert response.status_code == 204
+        assert response.status_code == 200
         first_aid_fume_tip.refresh_from_db()
         assert first_aid_fume_tip.views == 1
 

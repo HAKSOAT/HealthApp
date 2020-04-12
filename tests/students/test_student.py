@@ -49,40 +49,35 @@ class TestAccountStudent():
         assert response.status_code == 400
         assert 'password' in response.data['error'].keys()
 
-    @patch('students.serializer.Student.objects.filter')
-    def test_update_matric_exist(self, filter_mock,
-                                 client, min_user, auth_header):
-        data = {'matric_number': '2000test'}
+    def test_update_matric_exist(self, client, min_user,
+                                 max_user, auth_header):
+        data = {'matric_number': max_user.matric_number}
         response = client.patch(self.url, data=data,
                                 content_type='application/json',
                                 **auth_header)
         assert response.status_code == 400
         assert 'matric_number' in response.data['error'].keys()
 
-    @patch('students.serializer.Student.objects.filter')
-    def test_update_email_exist(self, filter_mock,
-                                 client, min_user, auth_header):
-        data = {'email': 'existing@email.com'}
+    def test_update_email_exist(self, client, min_user, max_user, auth_header):
+        data = {'email': max_user.email}
         response = client.patch(self.url, data=data,
                                 content_type='application/json',
                                 **auth_header)
         assert response.status_code == 400
         assert 'email' in response.data['error'].keys()
 
-    @patch('students.serializer.Student.objects.filter')
-    def test_update_mobile_number_exist(self, filter_mock,
-                                 client, min_user, auth_header):
-        data = {'mobile_number': '09011110000'}
+    def test_update_mobile_number_exist(self, client, min_user,
+                                        max_user, auth_header):
+        data = {'mobile_number': max_user.mobile_number}
         response = client.patch(self.url, data=data,
                                 content_type='application/json',
                                 **auth_header)
         assert response.status_code == 400
         assert 'mobile_number' in response.data['error'].keys()
 
-    @patch('students.serializer.Student.objects.filter')
-    def test_update_clinic_number_exist(self, filter_mock,
-                                        client, min_user, auth_header):
-        data = {'clinic_number': 'ST000111'}
+    def test_update_clinic_number_exist(self, client, min_user,
+                                        max_user, auth_header):
+        data = {'clinic_number': max_user.clinic_number}
         response = client.patch(self.url, data=data,
                                 content_type='application/json',
                                 **auth_header)

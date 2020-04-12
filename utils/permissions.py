@@ -29,15 +29,15 @@ class HasSufficientPermissions(permissions.BasePermission):
         user = request.user
         path_info = request._request.path_info
 
-        if user._meta.object_name == Worker._meta.object_name:
-            if not path_info.startswith('/' + health_centre_base_url):
+        if path_info.startswith('/' + health_centre_base_url):
+            if user._meta.object_name != Worker._meta.object_name:
                 raise exceptions.PermissionDenied(
                     {'success': False,
                      'error': 'Only Health Centre workers can access',
                      'status': HTTP_403_FORBIDDEN})
 
-        elif user._meta.object_name == Student._meta.object_name:
-            if not path_info.startswith('/' + student_base_url):
+        elif path_info.startswith('/' + student_base_url):
+            if user._meta.object_name != Student._meta.object_name:
                 raise exceptions.PermissionDenied(
                     {'success': False,
                      'error': 'Only students can access',
