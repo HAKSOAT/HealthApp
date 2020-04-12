@@ -3,11 +3,11 @@ from django.conf.urls import url
 from rest_framework.routers import DefaultRouter
 
 from students.views import LoginView
-from healthcentre.views import PingViewset, StudentView, IoTPingViewset, ws_index
+from healthcentre.views import HCPingViewset, StudentView, IoTPingViewset, ws_index
 
 router = DefaultRouter(trailing_slash=False)
 router.register('ping/iot', IoTPingViewset, basename='get-ping-iot')
-router.register('ping', PingViewset, basename='get-ping')
+router.register('ping', HCPingViewset, basename='get-ping')
 router.register('student', StudentView, basename='get-student')
 
 
