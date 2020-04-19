@@ -6,6 +6,9 @@ from students.utils.enums import Departments, UserTypes
 
 
 class Student(AbstractBaseUser):
+    class Meta:
+        ordering = ['-created_at']
+
     USERNAME_FIELD = 'matric_number'
 
     id = models.CharField(

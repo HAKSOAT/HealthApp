@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     'students.apps.StudentsConfig',
     'healthcentre.apps.HealthcentreConfig',
     'firstaid.apps.FirstaidConfig',
-    'drf_yasg'
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [

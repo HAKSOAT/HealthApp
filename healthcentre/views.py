@@ -2,7 +2,6 @@ from django.utils import timezone
 from rest_framework import mixins, viewsets
 from rest_framework.status import HTTP_404_NOT_FOUND
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import generics
 
 from healthcentre.serializer import (
     PingViewsetSerializer
@@ -12,6 +11,7 @@ from utils.helpers import format_response, save_in_redis, get_from_redis
 from utils.pagination import StandardPagination
 from students.models import Ping, Student
 from utils.authentication import APIKeyAuthentication
+from utils.filters import filter_student
 
 
 class StudentView(mixins.RetrieveModelMixin,
@@ -44,7 +44,13 @@ class StudentView(mixins.RetrieveModelMixin,
                                        ' student\'s profile')
 
     def list(self, request):
-        students = Student.objects.all()
+        query = request.query_params.get('query')
+        search_fields = ["first_name", "last_name",
+                         "matric_number", "clinic_number"]
+        if query:
+            students = filter_student(*search_fields, query=query)
+        else:
+            students = Student.objects.all()
         paginated_students = self.pagination_class.paginate_queryset(
             queryset=students, request=request
         )
