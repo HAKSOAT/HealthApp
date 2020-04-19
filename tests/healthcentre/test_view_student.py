@@ -15,6 +15,22 @@ class TestViewStudent():
         assert response.status_code == 200
         assert response.data['message'] == 'Successfully retrieved student\'s profile'
 
+    def test_view_all_students(self, client, hc_worker_auth_header, max_user):
+        response = client.get(
+            self.url, content_type='application/json',
+            **hc_worker_auth_header)
+        assert response.status_code == 200
+        assert response.data['message'] == 'Successfully retrieved students'
+
+    def test_view_students_search(self, client, hc_worker_auth_header, max_user):
+        query = 'HAKS'
+        response = client.get(
+            self.url + "?query=HAKS", content_type='application/json',
+            **hc_worker_auth_header)
+        assert response.data['data'][0]['first_name'] == query
+        assert response.status_code == 200
+        assert response.data['message'] == 'Successfully retrieved students'
+
     def test_nonexistent_student(self, client, hc_worker_auth_header):
         student_id = 'fake'
         response = client.get(

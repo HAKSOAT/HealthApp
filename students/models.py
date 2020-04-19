@@ -5,7 +5,18 @@ from students.utils.generate import LENGTH_OF_ID, generate_id
 from students.utils.enums import Departments, UserTypes
 
 
+class StudentManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter()
+
+    def get_confirmed(self):
+        return super().get_queryset().filter(is_confirmed=True)
+
+
 class Student(AbstractBaseUser):
+    class Meta:
+        ordering = ['-created_at']
+
     USERNAME_FIELD = 'matric_number'
 
     id = models.CharField(
@@ -29,6 +40,7 @@ class Student(AbstractBaseUser):
         choices=[(department, department.value) for department in Departments],
         null=True)
     is_confirmed = models.BooleanField(default=False)
+    objects = StudentManager()
 
     def __repr__(self):
         return f'<{self.email}>'
