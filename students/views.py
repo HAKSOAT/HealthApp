@@ -81,7 +81,7 @@ class ConfirmStudentViewset(viewsets.ViewSet):
                          )
     def partial_update(self, request, pk):
         data = request.data
-        student = Student.objects.filter(id=pk).first()
+        student = Student.objects.get_all().filter(id=pk).first()
         if not student:
             return format_response(error='Account does not exist',
                                    status=HTTP_400_BAD_REQUEST)
@@ -246,7 +246,8 @@ class ResetPasswordView(APIView):
             return format_response(
                 error=serializer.errors.get('errors', serializer.errors),
                 status=HTTP_400_BAD_REQUEST)
-        student = Student.objects.filter(email=data.get('email')).first()
+        student = Student.objects.get_all().filter(
+            email=data.get('email')).first()
         if not student:
             return format_response(
                 error='Account does not exist',
