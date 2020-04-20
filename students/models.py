@@ -8,10 +8,10 @@ from students.utils.constants import default_student_image
 
 class StudentManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter()
-
-    def get_confirmed(self):
         return super().get_queryset().filter(is_confirmed=True)
+
+    def get_all(self, **filters):
+        return super().get_queryset().filter(**filters)
 
 
 class Student(AbstractBaseUser):

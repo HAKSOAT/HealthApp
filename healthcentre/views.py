@@ -136,7 +136,7 @@ class StatisticsView(mixins.ListModelMixin,
             'pings': Ping.objects.count(),
             'replied_pings': 0,
             'video_calls': 0,
-            'students': Student.objects.get_confirmed().count()
+            'students': Student.objects.count()
         }
         return format_response(data=statistics,
                                message='Statistics retrieved.')

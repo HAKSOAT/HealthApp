@@ -23,8 +23,9 @@ class JSONWebTokenAuthentication(BaseAuthentication):
         try:
             payload = jwt.decode(
                 token[1], settings.SECRET_KEY, algorithms=['HS256'])
-            user = Student.objects.filter(id=payload['uid']).first() or \
-                   Worker.objects.filter(id=payload['uid']).first()
+            user = Student.objects.get_all().filter(
+                id=payload['uid']).first() or Worker.objects.filter(
+                id=payload['uid']).first()
         except jwt.DecodeError:
             raise exceptions.AuthenticationFailed(
                 {'error': 'Authentication Failed',

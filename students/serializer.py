@@ -29,7 +29,7 @@ class RegisterStudentSerializer(serializers.Serializer):
 
     def validate_email(self, email):
         email = StudentChecker.check_email(email)
-        student = Student.objects.filter(email=email).first()
+        student = Student.objects.get_all().filter(email=email).first()
         if student:
             raise serializers.ValidationError('Email already exists')
         return email
@@ -68,7 +68,7 @@ class LoginSerializer(serializers.Serializer):
 
     def validate(self, data):
         if self.context.get('user_type') == 'student':
-            user = Student.objects.filter(
+            user = Student.objects.get_all().filter(
                 email=data.get('email').lower()).first()
         elif self.context.get('user_type') == 'healthcentre':
             user = Worker.objects.filter(
@@ -234,7 +234,7 @@ class ResetPasswordSerializer(serializers.Serializer):
 
     def validate_email(self, email):
         email = StudentChecker.check_email(email)
-        student = Student.objects.filter(email=email).first()
+        student = Student.objects.get_all().filter(email=email).first()
         if not student:
             raise serializers.ValidationError(
                 'Account does not exist')
