@@ -23,3 +23,8 @@ mobile_numbers = [
     #SMILE
     "0702"
 ]
+
+default_student_image = "https://firebasestorage.googleapis.com/v0/b/" \
+                        "health-app-1583346005925.appspot.com/o/users_avatar" \
+                        "%2Fbfgi7tfn6yob_Habeeb.jpg?alt=media&token" \
+                        "=25a96e7b-5c33-465c-9924-6f7ede337ed6"

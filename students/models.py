@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser
 
 from students.utils.generate import LENGTH_OF_ID, generate_id
 from students.utils.enums import Departments, UserTypes
+from students.utils.constants import default_student_image
 
 
 class StudentManager(models.Manager):
@@ -34,7 +35,7 @@ class Student(AbstractBaseUser):
     matric_number = models.CharField(
         max_length=8, null=True, unique=True)
     clinic_number = models.CharField(max_length=8, null=True, unique=True)
-    image = models.URLField(null=True)
+    image = models.URLField(default=default_student_image)
     department = models.CharField(
         max_length=5,
         choices=[(department, department.value) for department in Departments],
