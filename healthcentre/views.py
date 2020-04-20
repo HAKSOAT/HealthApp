@@ -126,5 +126,21 @@ class IoTPingViewset(mixins.ListModelMixin, viewsets.GenericViewSet):
                                    status=HTTP_404_NOT_FOUND)
 
 
+class StatisticsView(mixins.ListModelMixin,
+                     viewsets.GenericViewSet):
+    """ Viewset for statistics """
+
+    @swagger_auto_schema(operation_description='Views statistics')
+    def list(self, request):
+        statistics = {
+            'pings': Ping.objects.count(),
+            'replied_pings': 0,
+            'video_calls': 0,
+            'students': Student.objects.get_confirmed().count()
+        }
+        return format_response(data=statistics,
+                               message='Statistics retrieved.')
+
+
 def ws_index(request):
     return format_response(message='Here')
