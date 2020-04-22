@@ -61,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'utils.middleware.add_header'
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -192,6 +193,8 @@ REST_FRAMEWORK = {
     'EXCEPTION_HANDLER': 'utils.helpers.custom_exception_handler',
 }
 
+
+# Channel
 ASGI_APPLICATION = 'config.routing.application'
 
 CHANNEL_LAYERS = {
@@ -203,7 +206,11 @@ CHANNEL_LAYERS = {
     },
 }
 
+
+# CORS
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_WHITELIST = []
 CORS_ORIGIN_REGEX_WHITELIST = []
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

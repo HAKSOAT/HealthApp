@@ -11,10 +11,11 @@ class StandardPagination(PageNumberPagination):
     invalid_page_message = 'Page does not exist'
 
     def get_paginated_response(self, data, message=None):
+        next_link = 1
         meta_data = {
             'links': {
-                'next': self.get_next_link(),
-                'previous': self.get_previous_link()
+                'next': self.get_next_link(), #.replace('http://', 'https://'),
+                'previous': self.get_previous_link()#.replace('http://', 'https://')
             },
             'count': self.page.paginator.count,
         }
