@@ -7,3 +7,9 @@ migrate:
 
 shell:
 	@ python manage.py shell
+
+load-fixtures:
+	@ python manage.py loaddata pings.json
+	@ python manage.py loaddata mock_students.json
+	@ python manage.py loaddata accounts.json
+	@ python manage.py loaddata firstaid.json

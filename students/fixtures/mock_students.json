@@ -258,6 +258,25 @@
       "password": "!5HHQcNbXhHTVdzKWCsqKM9U1bIfQi8hlpzZ0HXVd", 
       "is_confirmed": "True"
     }
+  },
+  {
+    "model": "students.student",
+    "pk": "4x9a3mttul4x",
+    "fields": {
+      "last_login": "2020-04-12T11:07:57.469Z",
+      "created_at": "2020-03-29T17:03:26.887Z",
+      "updated_at": "2020-04-12T11:07:57.470Z",
+      "first_name": "Habeeb",
+      "last_name": "Shopeju",
+      "password": "pbkdf2_sha256$180000$RuROKquDQeSO$O/X1l4FW351RigAy1EV73JxbTpS1+0Nf76er9rdq96c=",
+      "mobile_number": "09032214224",
+      "email": "shopejuh@gmail.com",
+      "matric_number": "20151228",
+      "clinic_number": "ST765890",
+      "image": "https://firebasestorage.googleapis.com/v0/b/health-app-1583346005925.appspot.com/o/users_avatar%2Fbfgi7tfn6yob_Habeeb.jpg?alt=media&token=25a96e7b-5c33-465c-9924-6f7ede337ed6",
+      "department": null,
+      "is_confirmed": "True"
+    }
   }
 ]
 

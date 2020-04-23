@@ -91,8 +91,7 @@ class PingViewset(mixins.RetrieveModelMixin,
 
     @swagger_auto_schema(operation_description='Views all pings')
     def list(self, request):
-        data = request.data
-        student_id = data.get('student', None)
+        student_id = request.query_params.get('student', None)
 
         if student_id:
             pings = Ping.objects.filter(student__id=student_id)
