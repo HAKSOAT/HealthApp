@@ -255,7 +255,7 @@ class PingViewsetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ping
         ref_name = 'StudentsPingViewsetSerializer'
-        fields = ['id', 'message', 'location', 'created_at']
+        fields = ['id', 'message', 'location', 'created_at', 'status']
 
     def validate(self, data):
         errors = {}

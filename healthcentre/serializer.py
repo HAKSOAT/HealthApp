@@ -9,7 +9,8 @@ class PingViewsetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ping
         ref_name = 'HealthcentrePingViewsetSerializer'
-        fields = ['id', 'message', 'location', 'created_at', 'student']
+        fields = ['id', 'message', 'location', 'created_at', 'student',
+                  'status']
 
     def get_student(self, ping):
         student_id = ping.student.id

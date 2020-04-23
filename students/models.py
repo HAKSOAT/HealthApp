@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 
 from students.utils.generate import LENGTH_OF_ID, generate_id
-from students.utils.enums import Departments, UserTypes
+from students.utils.enums import Departments, UserTypes, PingStatuses
 from students.utils.constants import default_student_image
 
 
@@ -38,7 +38,8 @@ class Student(AbstractBaseUser):
     image = models.URLField(default=default_student_image)
     department = models.CharField(
         max_length=5,
-        choices=[(department, department.value) for department in Departments],
+        choices=[(department.value, department.value)
+                 for department in Departments],
         null=True)
     is_confirmed = models.BooleanField(default=False)
     objects = StudentManager()
@@ -54,9 +55,9 @@ class Token(models.Model):
     )
     user_id = models.CharField(max_length=LENGTH_OF_ID, default=generate_id)
     user_table = models.CharField(max_length=20,
-                                  choices=[(user_type, user_type.value)
+                                  choices=[(user_type.value, user_type.value)
                                            for user_type in UserTypes],
-                                  default=UserTypes.student)
+                                  default=UserTypes.student.value)
     token = models.CharField(max_length=500)
     is_blacklisted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -72,6 +73,10 @@ class Ping(models.Model):
         editable=False
     )
     is_read = models.BooleanField(default=False)
+    status = models.CharField(max_length=20,
+                              choices=[(status.value, status.value)
+                                       for status in PingStatuses],
+                              default=PingStatuses.pending.value)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     message = models.CharField(max_length=255)
     location = models.CharField(max_length=30, null=True)
