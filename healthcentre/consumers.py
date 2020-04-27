@@ -2,7 +2,6 @@ import json
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from channels.exceptions import StopConsumer
 
 from students.models import Student, Ping
 from students.utils.enums import PingStatuses
