@@ -58,3 +58,9 @@ class Departments(Enum):
 class UserTypes(Enum):
     student = 'Student'
     worker = 'Worker'
+
+
+class PingStatuses(Enum):
+    accepted = 'accepted'
+    pending = 'pending'
+    ignored = 'ignored'
