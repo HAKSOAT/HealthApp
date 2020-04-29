@@ -263,6 +263,7 @@ class PingViewsetSerializer(serializers.ModelSerializer):
         return {
             'first_name': ping.student.first_name,
             'last_name': ping.student.last_name,
+            'clinic_number': ping.student.clinic_number,
             'image': ping.student.image
         }
 
