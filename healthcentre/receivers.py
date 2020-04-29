@@ -16,6 +16,6 @@ def ping_receiver(sender, **kwargs):
         "healthcentre",
         {
             'type': 'send_ping_notification',
-            'text': kwargs['ping_data']
+            'data': kwargs['ping_data']
         }
     )

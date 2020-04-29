@@ -60,7 +60,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         try:
             text_data_json = json.loads(text_data)
         except json.JSONDecodeError:
-            text_data_json = {'error': 'Only json format supported'}
+            text_data_json = {'string': text_data}
 
         status = text_data_json.get('status', None)
         if status:
@@ -72,7 +72,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.destination_group_name,
             {
                 'type': 'send_message',
-                **text_data_json
+                'data': text_data_json
             }
         )
 
@@ -93,7 +93,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.group_name,
             {
                 'type': 'send_message',
-                **message
+                'data': message
             }
         )
 
