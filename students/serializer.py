@@ -251,11 +251,20 @@ class ResetPasswordSerializer(serializers.Serializer):
 class PingViewsetSerializer(serializers.ModelSerializer):
     message = serializers.CharField(default='')
     location = serializers.CharField(default='')
+    student = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Ping
         ref_name = 'StudentsPingViewsetSerializer'
-        fields = ['id', 'message', 'location', 'created_at', 'status']
+        fields = ['id', 'message', 'location', 'created_at', 'status',
+                  'student']
+
+    def get_student(self, ping):
+        return {
+            'first_name': ping.student.first_name,
+            'last_name': ping.student.last_name,
+            'image': ping.student.image
+        }
 
     def validate(self, data):
         errors = {}
