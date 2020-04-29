@@ -51,7 +51,7 @@ class RegisterStudentViewset(viewsets.ViewSet):
         send_mail(
             'Confirm HealthApp Account',
             'The OTP code is {}.\n Valid for 5 minutes.'.format(otp),
-            os.getenv('HOST_EMAIL'),
+            os.getenv('CUSTOM_EMAIL_SENDER'),
             [data['email']],
             fail_silently=False
         )
@@ -109,7 +109,7 @@ class ConfirmStudentViewset(viewsets.ViewSet):
             send_mail(
                 'Confirm HealthApp Account',
                 'The OTP code is {}.\n Valid for 5 minutes.'.format(otp),
-                os.getenv('HOST_EMAIL'),
+                os.getenv('CUSTOM_EMAIL_SENDER'),
                 [student.email],
                 fail_silently=False
             )
@@ -270,7 +270,7 @@ class ResetPasswordView(APIView):
             send_mail(
                 'Reset HealthApp Password',
                 'The OTP code is {}.\n Valid for 5 minutes.'.format(otp),
-                os.getenv('HOST_EMAIL'),
+                os.getenv('CUSTOM_EMAIL_SENDER'),
                 [student.email],
                 fail_silently=False
             )
