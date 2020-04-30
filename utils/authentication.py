@@ -6,7 +6,7 @@ from rest_framework.authentication import (
     BaseAuthentication, get_authorization_header)
 
 from students.models import Student
-from healthcentre.models import Worker, IoT
+from healthcentre.models import Worker
 
 
 class JSONWebTokenAuthentication(BaseAuthentication):
@@ -47,24 +47,3 @@ class JSONWebTokenAuthentication(BaseAuthentication):
                      'message': 'Account is not yet confirmed'})
 
         return user, payload
-
-
-class APIKeyAuthentication(BaseAuthentication):
-    keyword = 'Api-Key'
-
-    def authenticate(self, request):
-
-        token = get_authorization_header(request).decode().split()
-        if self.keyword not in token:
-            raise exceptions.AuthenticationFailed(
-                {'error': 'Authentication Failed',
-                 'message': 'Api-Key String Not Set'})
-
-        iot = IoT.objects.filter(api_key=token[1]).first()
-        if not iot:
-            raise exceptions.AuthenticationFailed(
-                {'error': 'Authentication Failed',
-                 'message': 'Invalid Api-Key'})
-
-        payload = None
-        return iot, payload

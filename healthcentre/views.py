@@ -1,4 +1,3 @@
-from django.utils import timezone
 from rest_framework import mixins, viewsets
 from rest_framework.status import HTTP_404_NOT_FOUND
 from drf_yasg.utils import swagger_auto_schema
@@ -7,10 +6,9 @@ from healthcentre.serializer import (
     PingViewsetSerializer
 )
 from students.serializer import StudentSerializer
-from utils.helpers import format_response, save_in_redis, get_from_redis
+from utils.helpers import format_response
 from utils.pagination import StandardPagination
 from students.models import Ping, Student
-from utils.authentication import APIKeyAuthentication
 from utils.filters import filter_student
 
 
@@ -108,23 +106,6 @@ class PingViewset(mixins.RetrieveModelMixin,
         return response
 
 
-class IoTPingViewset(mixins.ListModelMixin, viewsets.GenericViewSet):
-    authentication_classes = (APIKeyAuthentication, )
-    permission_classes = ()
-
-    @swagger_auto_schema(auto_schema=None)
-    def list(self, request):
-        last_check = get_from_redis('IOT', timezone.now())
-        ping = Ping.objects.filter(created_at__gt=last_check).first()
-        save_in_redis('IOT', timezone.now(), 60 * 10)
-        if ping:
-            return format_response(message='New ping found')
-        else:
-            return format_response(success=False,
-                                   message='No new ping found',
-                                   status=HTTP_404_NOT_FOUND)
-
-
 class StatisticsView(mixins.ListModelMixin,
                      viewsets.GenericViewSet):
     """ Viewset for statistics """
@@ -139,7 +120,3 @@ class StatisticsView(mixins.ListModelMixin,
         }
         return format_response(data=statistics,
                                message='Statistics retrieved.')
-
-
-def ws_index(request):
-    return format_response(message='Here')
