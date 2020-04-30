@@ -15,7 +15,7 @@ from channels.routing import get_default_application
 
 load_dotenv('.env')
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.staging-settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 os.environ['ASGI_THREADS'] = "4"
 django.setup()
 
