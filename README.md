@@ -8,7 +8,8 @@ This repository holds the server-side code for the project that has three parts 
 
  1. Client-side web for the health centre
  2. Mobile app for the students
- 3. Alarm system for the health centre
+ 3. [Alarm (IoT) system](https://github.com/HAKSOAT/HealthAppIoT) for the health centre
+ 4. Server-side web application
 
 In this code base, you will find the code that the three sections above rely upon to function properly.
 
