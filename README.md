@@ -17,6 +17,9 @@ The code is written in Python, specifically Django and the Django Rest Framework
 
 Submission should be graded based on the **master** branch and is currently hosted [here](https://curefb.herokuapp.com). However, we are committed to improving the project beyond what we have at submission for the Solutions challenge. Hence, new code will be pushed to the **staging**.
 
+The documentation can be found at: `/api/v1/swagger` depending on the host.
+
+For example: https://curefb.herokuapp.com/api/v1/swagger for the current host.
 
 **Setting up Locally**
 It is advised that the project is set up on a Linux (Debian-based) operating system and Python 3 for compatibility.
